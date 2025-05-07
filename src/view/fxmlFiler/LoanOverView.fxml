@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="view.LoanOverviewViewController">
+    <top>
+        <VBox spacing="10.0" BorderPane.alignment="CENTER">
+            <children>
+                <Label styleClass="heading" text="VIA Laptop Udlånssystem - Låneoversigt">
+                    <font>
+                        <Font name="System Bold" size="24.0" />
+                    </font>
+                    <VBox.margin>
+                        <Insets bottom="10.0" />
+                    </VBox.margin>
+                </Label>
+                <Separator />
+            </children>
+            <padding>
+                <Insets bottom="10.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+        </VBox>
+    </top>
+    <center>
+        <VBox spacing="20.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+            <children>
+                <!-- Statistik sektion -->
+                <HBox spacing="30.0" alignment="CENTER">
+                    <padding>
+                        <Insets bottom="10.0" top="10.0" />
+                    </padding>
+                    <children>
+                        <VBox styleClass="stat-box" style="-fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 10; -fx-background-color: #f8f8f8;">
+                            <children>
+                                <Label text="Aktive udlån" styleClass="stat-title">
+                                    <font>
+                                        <Font name="System Bold" size="14.0" />
+                                    </font>
+                                </Label>
+                                <Label fx:id="activeLoansCountLabel" text="0" styleClass="stat-value">
+                                    <font>
+                                        <Font size="24.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </VBox>
+                        <VBox styleClass="stat-box" style="-fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 10; -fx-background-color: #f8f8f8;">
+                            <children>
+                                <Label text="Høj-ydelses computere" styleClass="stat-title">
+                                    <font>
+                                        <Font name="System Bold" size="14.0" />
+                                    </font>
+                                </Label>
+                                <Label fx:id="highPerformanceCountLabel" text="0" styleClass="stat-value">
+                                    <font>
+                                        <Font size="24.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </VBox>
+                        <VBox styleClass="stat-box" style="-fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 10; -fx-background-color: #f8f8f8;">
+                            <children>
+                                <Label text="Lav-ydelses computere" styleClass="stat-title">
+                                    <font>
+                                        <Font name="System Bold" size="14.0" />
+                                    </font>
+                                </Label>
+                                <Label fx:id="lowPerformanceCountLabel" text="0" styleClass="stat-value">
+                                    <font>
+                                        <Font size="24.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </VBox>
+                    </children>
+                </HBox>
+
+                <!-- Høj-ydelses computere sektion -->
+                <VBox spacing="10.0">
+                    <children>
+                        <Label styleClass="section-header" text="Udlånte høj-ydelses computere">
+                            <font>
+                                <Font name="System Bold" size="18.0" />
+                            </font>
+                        </Label>
+                        <TableView fx:id="highPerformanceTable" prefHeight="200.0">
+                            <columns>
+                                <TableColumn fx:id="highStudentNameColumn" prefWidth="150.0" text="Student" />
+                                <TableColumn fx:id="highViaIdColumn" prefWidth="80.0" text="VIA ID" />
+                                <TableColumn fx:id="highEmailColumn" prefWidth="150.0" text="Email" />
+                                <TableColumn fx:id="highPhoneColumn" prefWidth="100.0" text="Telefon" />
+                                <TableColumn fx:id="highLaptopBrandColumn" prefWidth="100.0" text="Mærke" />
+                                <TableColumn fx:id="highLaptopModelColumn" prefWidth="100.0" text="Model" />
+                                <TableColumn fx:id="highSpecsColumn" prefWidth="120.0" text="Specs" />
+                                <TableColumn fx:id="highLoanDateColumn" prefWidth="120.0" text="Udlånsdato" />
+                            </columns>
+                        </TableView>
+                    </children>
+                </VBox>
+
+                <!-- Lav-ydelses computere sektion -->
+                <VBox spacing="10.0">
+                    <children>
+                        <Label styleClass="section-header" text="Udlånte lav-ydelses computere">
+                            <font>
+                                <Font name="System Bold" size="18.0" />
+                            </font>
+                        </Label>
+                        <TableView fx:id="lowPerformanceTable" prefHeight="200.0">
+                            <columns>
+                                <TableColumn fx:id="lowStudentNameColumn" prefWidth="150.0" text="Student" />
+                                <TableColumn fx:id="lowViaIdColumn" prefWidth="80.0" text="VIA ID" />
+                                <TableColumn fx:id="lowEmailColumn" prefWidth="150.0" text="Email" />
+                                <TableColumn fx:id="lowPhoneColumn" prefWidth="100.0" text="Telefon" />
+                                <TableColumn fx:id="lowLaptopBrandColumn" prefWidth="100.0" text="Mærke" />
+                                <TableColumn fx:id="lowLaptopModelColumn" prefWidth="100.0" text="Model" />
+                                <TableColumn fx:id="lowSpecsColumn" prefWidth="120.0" text="Specs" />
+                                <TableColumn fx:id="lowLoanDateColumn" prefWidth="120.0" text="Udlånsdato" />
+                            </columns>
+                        </TableView>
+                    </children>
+                </VBox>
+            </children>
+        </VBox>
+    </center>
+    <bottom>
+        <HBox alignment="CENTER_RIGHT" spacing="10.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+            </padding>
+            <children>
+                <Button fx:id="refreshButton" styleClass="secondary-button" mnemonicParsing="false" onAction="#onRefresh" text="Opdater oversigt" />
+                <Button fx:id="backButton" styleClass="secondary-button" mnemonicParsing="false" onAction="#onBack" text="Tilbage til menu" />
+                <Button fx:id="exitButton" styleClass="secondary-button" mnemonicParsing="false" onAction="#onExit" text="Afslut" />
+            </children>
+        </HBox>
+    </bottom>
+</BorderPane>
