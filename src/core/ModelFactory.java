@@ -1,7 +1,7 @@
 package core;
 
-import model.logic.DataManager;
-import model.logic.DataModel;
+import alt.logic.DataManager;
+import alt.logic.DataModel;
 
 /**
  * Factory som skaber og håndterer alle model objekter.
