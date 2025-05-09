@@ -8,5 +8,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="javafx.web" level="project" />
+    <orderEntry type="library" name="jfx.incubator.richtext" level="project" />
+    <orderEntry type="library" name="c3p0-0.9.5.5" level="project" />
   </component>
 </module>
