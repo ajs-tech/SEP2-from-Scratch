@@ -8,5 +8,6 @@ public class AvailableLaptopsViewModel {
 
     public AvailableLaptopsViewModel(Model laptopRentModel){
         this.laptopRentModel = laptopRentModel;
+
     }
 }
