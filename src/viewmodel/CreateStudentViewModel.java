@@ -2,12 +2,10 @@ package viewmodel;
 
 import model.Model;
 
-public class AvailableLaptopsViewModel {
+public class CreateStudentViewModel {
     private Model laptopRentModel;
 
-
-    public AvailableLaptopsViewModel(Model laptopRentModel){
+    public CreateStudentViewModel(Model laptopRentModel){
         this.laptopRentModel = laptopRentModel;
-
     }
 }
