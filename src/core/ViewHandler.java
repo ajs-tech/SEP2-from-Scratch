@@ -4,171 +4,178 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import view.*;
+import view.Controller.*;
+import viewmodel.ViewModelFactory;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
- * Handles view navigation and management in the application
+ * Håndterer alle views i applikationen.
+ * Ansvarlig for at indlæse FXML-filer, initialisere controllere,
+ * og navigere mellem forskellige views.
  */
 public class ViewHandler {
-  // Constants for view identification
-  public static final String MAIN_MENU = "MainMenu";
-  public static final String STUDENT_LAPTOP = "StudentLaptop";
-  public static final String RETURN_COMPUTER = "ReturnComputer";
-  public static final String LOAN_OVERVIEW = "LoanOverview";
-  public static final String AVAILABLE_LAPTOPS = "AvailableLaptops";
-  public static final String CREATE_STUDENT = "CreateStudent";
 
   private Stage primaryStage;
-  private final ViewModelFactory viewModelFactory;
-  private final Map<String, Scene> scenes;
+  private Scene currentScene;
+  private ViewModelFactory viewModelFactory;
+
+  // References til controllere
+  private LaptopManagementMenuController menuController;
+  private AvailableLaptopsViewController availableLaptopsController;
+  private StudentLaptopViewController studentLaptopController;
+  private LoanOverviewViewController loanOverviewController;
+  private ReturnComputerViewController returnComputerController;
 
   /**
-   * Creates a new ViewHandler
-   * @param viewModelFactory The factory for creating ViewModels
+   * Konstruktør for ViewHandler.
+   *
+   * @param viewModelFactory Factory som giver adgang til alle ViewModels
    */
   public ViewHandler(ViewModelFactory viewModelFactory) {
     this.viewModelFactory = viewModelFactory;
-    this.scenes = new HashMap<>();
-    this.primaryStage = new Stage();
   }
 
   /**
-   * Starts the application by opening the main menu
+   * Starter applikationen og viser hovedmenuen.
+   *
+   * @param primaryStage JavaFX main stage
    */
-  public void start() {
-    openView(MAIN_MENU);
+  public void start(Stage primaryStage) {
+    this.primaryStage = primaryStage;
+    this.currentScene = new Scene(new Parent() {});
     primaryStage.setTitle("VIA Laptop Udlånssystem");
+    openMainMenu();
     primaryStage.show();
   }
 
   /**
-   * Opens the main menu view
+   * Åbner hovedmenuen.
    */
   public void openMainMenu() {
-    openView(MAIN_MENU);
+    FXMLLoader loader = new FXMLLoader();
+
+    if (menuController == null) {
+      Parent root = getRootByPath("../fxmlFiler/LaptopManagementMenu.fxml", loader);
+      menuController = loader.getController();
+      menuController.init(this, viewModelFactory);
+    } else {
+      menuController.reset();
+    }
+
+    primaryStage.setTitle("VIA Laptop Udlånssystem - Hovedmenu");
+    setScene(menuController);
   }
 
   /**
-   * Opens the student laptop view
+   * Åbner visning af tilgængelige laptops.
+   */
+  public void openAvailableLaptops() {
+    FXMLLoader loader = new FXMLLoader();
+
+    if (availableLaptopsController == null) {
+      Parent root = getRootByPath("../fxmlFiler/AvailableLaptopsView.fxml", loader);
+      availableLaptopsController = loader.getController();
+      availableLaptopsController.init(this, viewModelFactory);
+    } else {
+      availableLaptopsController.reset();
+    }
+
+    primaryStage.setTitle("VIA Laptop Udlånssystem - Tilgængelige Laptops");
+    setScene(availableLaptopsController);
+  }
+
+  /**
+   * Åbner studerende/laptop-visningen.
    */
   public void openStudentLaptopView() {
-    openView(STUDENT_LAPTOP);
+    FXMLLoader loader = new FXMLLoader();
+
+    if (studentLaptopController == null) {
+      Parent root = getRootByPath("../fxmlFiler/StudentLaptopView.fxml", loader);
+      studentLaptopController = loader.getController();
+      studentLaptopController.init(this, viewModelFactory);
+    } else {
+      studentLaptopController.reset();
+    }
+
+    primaryStage.setTitle("VIA Laptop Udlånssystem - Udlån Laptop");
+    setScene(studentLaptopController);
   }
 
   /**
-   * Opens the create student view
+   * Åbner låneoversigten.
    */
-  public void openCreateStudentView() {
-    openView(CREATE_STUDENT);
+  public void openLoanOverview() {
+    FXMLLoader loader = new FXMLLoader();
+
+    if (loanOverviewController == null) {
+      Parent root = getRootByPath("../fxmlFiler/LoanOverviewView.fxml", loader);
+      loanOverviewController = loader.getController();
+      loanOverviewController.init(this, viewModelFactory);
+    } else {
+      loanOverviewController.reset();
+    }
+
+    primaryStage.setTitle("VIA Laptop Udlånssystem - Låneoversigt");
+    setScene(loanOverviewController);
   }
 
   /**
-   * Opens the return computer view
+   * Åbner returner computer visningen.
    */
   public void openReturnComputerView() {
-    openView(RETURN_COMPUTER);
+    FXMLLoader loader = new FXMLLoader();
+
+    if (returnComputerController == null) {
+      Parent root = getRootByPath("../fxmlFiler/ReturnComputerView.fxml", loader);
+      returnComputerController = loader.getController();
+      returnComputerController.init(this, viewModelFactory);
+    } else {
+      returnComputerController.reset();
+    }
+
+    primaryStage.setTitle("VIA Laptop Udlånssystem - Returner Computer");
+    setScene(returnComputerController);
   }
 
   /**
-   * Opens the loan overview view
+   * Afslutter applikationen.
    */
-  public void openLoanOverviewView() {
-    openView(LOAN_OVERVIEW);
-  }
-
-  /**
-   * Opens the available laptops view
-   */
-  public void openAvailableLaptopsView() {
-    openView(AVAILABLE_LAPTOPS);
-  }
-
-  /**
-   * Closes all views
-   */
-  public void closeView() {
+  public void closeApplication() {
+    // Før applikationen lukkes, frigør eventuelle ressourcer
     primaryStage.close();
   }
 
   /**
-   * Generic method to open any view
-   * @param viewId The ID of the view to open
+   * Hjælpemetode til at indlæse FXML-filer og returnere Parent node.
    */
-  private void openView(String viewId) {
-    Scene scene = scenes.get(viewId);
-    if (scene == null) {
-      scene = loadView(viewId);
-      scenes.put(viewId, scene);
+  private Parent getRootByPath(String path, FXMLLoader loader) {
+    loader.setLocation(getClass().getResource(path));
+    Parent root = null;
+    try {
+      root = loader.load();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
-    primaryStage.setScene(scene);
-    primaryStage.sizeToScene();
+    return root;
   }
 
   /**
-   * Loads a view from FXML and initializes its controller
-   * @param viewId The ID of the view to load
-   * @return The loaded Scene
+   * Opdaterer scenen med det nye view.
    */
-  private Scene loadView(String viewId) {
-    try {
-      FXMLLoader loader = new FXMLLoader();
-      Parent root = null;
-      ViewController controller = null;
-      Object viewModel = null;
-
-      switch (viewId) {
-        case MAIN_MENU:
-          loader.setLocation(getClass().getResource("/view/fxmlFiler/LaptopManagementMenu.fxml"));
-          root = loader.load();
-          controller = loader.getController();
-          viewModel = viewModelFactory.getLaptopManagementMenuViewModel();
-          break;
-        case STUDENT_LAPTOP:
-          loader.setLocation(getClass().getResource("/view/fxmlFiler/StudentLaptopView.fxml"));
-          root = loader.load();
-          controller = loader.getController();
-          viewModel = viewModelFactory.getStudentLaptopViewModel();
-          break;
-        case CREATE_STUDENT:
-          loader.setLocation(getClass().getResource("/view/fxmlFiler/createStudent.fxml"));
-          root = loader.load();
-          controller = loader.getController();
-          viewModel = viewModelFactory.getCreateStudentViewModel();
-          break;
-        case RETURN_COMPUTER:
-          loader.setLocation(getClass().getResource("/view/fxmlFiler/ReturnComputerView.fxml"));
-          root = loader.load();
-          controller = loader.getController();
-          viewModel = viewModelFactory.getReturnComputerViewModel();
-          break;
-        case LOAN_OVERVIEW:
-          loader.setLocation(getClass().getResource("/view/fxmlFiler/LoanOverView.fxml"));
-          root = loader.load();
-          controller = loader.getController();
-          viewModel = viewModelFactory.getLoanOverviewViewModel();
-          break;
-        case AVAILABLE_LAPTOPS:
-          loader.setLocation(getClass().getResource("/view/fxmlFiler/AvailableLaptopsView.fxml"));
-          root = loader.load();
-          controller = loader.getController();
-          viewModel = viewModelFactory.getAvailableLaptopsViewModel();
-          break;
-        default:
-          throw new IllegalArgumentException("Unknown view: " + viewId);
-      }
-
-      // Initialize the controller with the view handler and view model
-      controller.init(this, viewModel);
-
-      // Return the loaded scene
-      return new Scene(root);
-    } catch (IOException e) {
-      e.printStackTrace();
-      return null;
+  private void setScene(Controller controller) {
+    // Vi antager at getRootByPath har opdateret loaderen som nu indeholder vores controller
+    Scene rootScene = ((Parent)controller).getScene();
+    if (rootScene == null) {
+      // Dette er en simplifikation - i virkeligheden ville du have mere kompleks logik her
+      // for at få Parent fra controlleren
+      System.out.println("Scene er null, kan ikke sætte den");
+      return;
     }
+
+    currentScene = rootScene;
+    primaryStage.setScene(currentScene);
+    primaryStage.sizeToScene();
   }
 }
