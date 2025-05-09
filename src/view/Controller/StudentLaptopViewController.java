@@ -3,7 +3,7 @@ package view.Controller;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
-import view.ViewHandler;
+import core.ViewHandler;
 import view.Controller.Controller;
 import core.ViewModelFactory;
 import viewmodel.StudentLaptopViewModel;

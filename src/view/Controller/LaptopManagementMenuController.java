@@ -4,7 +4,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import core.ViewModelFactory;
-import view.ViewHandler;
+import core.ViewHandler;
 import viewmodel.LaptopManagementMenuViewModel;
 
 /**

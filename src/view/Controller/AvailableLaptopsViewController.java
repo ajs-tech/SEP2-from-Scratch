@@ -5,7 +5,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import view.ViewHandler;
+import core.ViewHandler;
 import view.Controller.Controller;
 import core.ViewModelFactory;
 import viewmodel.AvailableLaptopsViewModel;
