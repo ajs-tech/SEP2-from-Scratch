@@ -1,9 +1,12 @@
 package viewmodel;
 
+import model.Model;
+
 public class ReturnLaptopViewModel {
+    private Model laptopRentModel;
 
 
-    public ReturnLaptopViewModel(){
-
+    public ReturnLaptopViewModel(Model laptopRentModel){
+        this.laptopRentModel = laptopRentModel;
     }
 }

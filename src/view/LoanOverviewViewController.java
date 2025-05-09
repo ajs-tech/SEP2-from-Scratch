@@ -1,16 +1,19 @@
 package view;
 
 import core.ViewHandler;
+import core.ViewmModelFactory;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Button;
 import javafx.event.ActionEvent;
+import viewmodel.LoanOverviewViewModel;
 
 public class LoanOverviewViewController implements ViewController {
 
     private ViewHandler viewHandler;
+    private LoanOverviewViewModel loanOverviewViewModel;
 
     // Statistik Labels
     @FXML private Label activeLoansCountLabel;
@@ -45,8 +48,9 @@ public class LoanOverviewViewController implements ViewController {
     @FXML private Button exitButton;
 
     @Override
-    public void init(ViewHandler viewHandler) {
+    public void init(ViewHandler viewHandler, ViewmModelFactory viewmModelFactory) {
         this.viewHandler = viewHandler;
+        this.loanOverviewViewModel = viewmModelFactory.getLoanOverviewViewModel();
     }
 
     @Override

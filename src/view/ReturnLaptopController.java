@@ -1,16 +1,19 @@
 package view;
 
 import core.ViewHandler;
+import core.ViewmModelFactory;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.event.ActionEvent;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
+import viewmodel.ReturnLaptopViewModel;
 
 public class ReturnLaptopController implements ViewController {
 
     private ViewHandler viewHandler;
+    private ReturnLaptopViewModel returnLaptopViewModel;
 
     // Søgepanel
     @FXML private ComboBox<String> searchTypeComboBox;
@@ -45,8 +48,9 @@ public class ReturnLaptopController implements ViewController {
     @FXML private Button exitButton;
 
     @Override
-    public void init(ViewHandler viewHandler) {
+    public void init(ViewHandler viewHandler, ViewmModelFactory viewmModelFactory) {
         this.viewHandler = viewHandler;
+        this.returnLaptopViewModel = viewmModelFactory.getReturnLaptopViewModel();
     }
 
     @Override

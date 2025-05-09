@@ -1,15 +1,18 @@
 package view;
 
 import core.ViewHandler;
+import core.ViewmModelFactory;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.event.ActionEvent;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
+import viewmodel.AvailableLaptopsViewModel;
 
 public class AvailableLaptopsController implements ViewController {
 
     private ViewHandler viewHandler;
+    private AvailableLaptopsViewModel availableLaptopsViewModel;
 
     // Statistik labels
     @FXML private Label totalAvailableCountLabel;
@@ -43,8 +46,10 @@ public class AvailableLaptopsController implements ViewController {
 
 
     @Override
-    public void init(ViewHandler viewHandler) {
+    public void init(ViewHandler viewHandler, ViewmModelFactory viewmModelFactory) {
         this.viewHandler = viewHandler;
+        this.availableLaptopsViewModel = viewmModelFactory.getAvailableLaptopsViewModel();
+
     }
 
     @Override

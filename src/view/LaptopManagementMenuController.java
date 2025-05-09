@@ -1,13 +1,15 @@
 package view;
 
 import core.ViewHandler;
+import core.ViewmModelFactory;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import viewmodel.LaptopManagementMenuViewModel;
 
 public class LaptopManagementMenuController implements ViewController {
     private ViewHandler viewHandler;
-
+    private LaptopManagementMenuViewModel laptopManagementMenuViewModel;
     // Labels
 
     @FXML
@@ -23,9 +25,10 @@ public class LaptopManagementMenuController implements ViewController {
     // ViewController interface metoder
 
     @Override
-    public void init(ViewHandler viewHandler) {
+    public void init(ViewHandler viewHandler, ViewmModelFactory viewmModelFactory) {
         this.viewHandler = viewHandler;
-        // Initialize labels here if needed
+        this.laptopManagementMenuViewModel = viewmModelFactory.getLaptopManagementMenuViewModel();
+        availableLabel.setText(availableLabel.getText() + " 10");
     }
 
     @Override

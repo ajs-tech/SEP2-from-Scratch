@@ -1,6 +1,7 @@
 package view;
 
 import core.ViewHandler;
+import core.ViewmModelFactory;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -8,10 +9,12 @@ import javafx.scene.layout.HBox;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
 import javafx.event.ActionEvent;
+import viewmodel.CreateStudentViewModel;
 
 public class CreateStudentController implements ViewController{
 
     private ViewHandler viewHandler;
+    private CreateStudentViewModel createStudentViewModel;
 
     // TextFields
     @FXML private TextField nameField;
@@ -82,7 +85,9 @@ public class CreateStudentController implements ViewController{
 
 
     @Override
-    public void init(ViewHandler viewHandler) {
+    public void init(ViewHandler viewHandler, ViewmModelFactory viewmModelFactory) {
+        this.viewHandler = viewHandler;
+        this.createStudentViewModel = viewmModelFactory.getCreateStudentViewModel();
 
     }
 

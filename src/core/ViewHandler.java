@@ -6,16 +6,17 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import view.ViewController;
 
-import javax.imageio.IIOException;
 import java.io.IOException;
 
 public class ViewHandler {
+    ViewmModelFactory viewmModelFactory;
     private Scene createStudentScene;
     private Scene laptopManagementMenuScene;
     private Stage primaryStage;
     private Stage secondaryStage;
 
     public ViewHandler(){
+        viewmModelFactory = ViewmModelFactory.getInstance();
         primaryStage = new Stage();
         secondaryStage = new Stage();
         primaryStage.setResizable(false);
@@ -94,7 +95,7 @@ public class ViewHandler {
         loader.setLocation(getClass().getResource(path));
         Parent root = loader.load();
         ViewController controller = loader.getController();
-        controller.init(this);  // Assuming your ViewController has an init method
+        controller.init(this, viewmModelFactory);
         return root;
     }
 
