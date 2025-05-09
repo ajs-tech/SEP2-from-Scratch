@@ -7,7 +7,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="view.LaptopManagementMenuController"
+            fx:controller="view.controllers.LaptopManagementMenuController"
             prefHeight="500.0" prefWidth="500.0">
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>

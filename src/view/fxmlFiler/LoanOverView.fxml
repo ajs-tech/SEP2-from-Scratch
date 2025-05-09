@@ -8,7 +8,7 @@
 <BorderPane prefHeight="700.0" prefWidth="1000.0"
             xmlns="http://javafx.com/javafx/11.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="view.LoanOverviewViewController">
+            fx:controller="view.controllers.LoanOverviewViewController">
 
     <!-- Top sektion -->
     <top>

@@ -1,6 +1,7 @@
 package objects;
 
 import enums.PerformanceTypeEnum;
+import model.helpToLogic.LaptopData;
 import util.PropertyChangeSubjectInterface;
 
 import java.beans.PropertyChangeListener;
@@ -233,21 +234,21 @@ public class Laptop implements PropertyChangeSubjectInterface {
 
     @Override
     public void addListener(PropertyChangeListener listener) {
-
+        support.addPropertyChangeListener(listener);
     }
 
     @Override
     public void removeListener(PropertyChangeListener listener) {
-
+        support.removePropertyChangeListener(listener);
     }
 
     @Override
     public void addListener(String propertyName, PropertyChangeListener listener) {
-
+        support.addPropertyChangeListener(propertyName, listener);
     }
 
     @Override
     public void removeListener(String propertyName, PropertyChangeListener listener) {
-
+        support.removePropertyChangeListener(propertyName, listener);
     }
 }

@@ -1,4 +1,4 @@
-package view;
+package view.controllers;
 
 import core.ViewHandler;
 import core.ViewmModelFactory;
