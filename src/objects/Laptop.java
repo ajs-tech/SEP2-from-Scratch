@@ -1,8 +1,10 @@
 package objects;
 
 import enums.PerformanceTypeEnum;
-import util.ModelObservable;
+import util.PropertyChangeSubjectInterface;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -10,7 +12,7 @@ import java.util.UUID;
  * Represents a laptop in the loan system.
  * Uses Java's built-in Observable pattern and State pattern.
  */
-public class Laptop extends ModelObservable {
+public class Laptop implements PropertyChangeSubjectInterface {
     private UUID id;
     private String brand;
     private String model;
@@ -18,32 +20,13 @@ public class Laptop extends ModelObservable {
     private int ram;
     private PerformanceTypeEnum performanceType;
     private LaptopState state;
+    private PropertyChangeSupport support;
 
-    /**
-     * Constructor for creating a new laptop with a random UUID
-     *
-     * @param brand            model.models.Laptop brand
-     * @param model            model.models.Laptop model
-     * @param gigabyte         Hard disk capacity in GB
-     * @param ram              RAM in GB
-     * @param performanceType  Performance category (HIGH/LOW)
-     * @throws IllegalArgumentException if input validation fails
-     */
     public Laptop(String brand, String model, int gigabyte, int ram, PerformanceTypeEnum performanceType) {
         this(UUID.randomUUID(), brand, model, gigabyte, ram, performanceType);
+        support = new PropertyChangeSupport(this);
     }
 
-    /**
-     * Constructor for creating a laptop with a specific UUID (used when loading from database)
-     *
-     * @param id               Unique ID (UUID)
-     * @param brand            model.models.Laptop brand
-     * @param model            model.models.Laptop model
-     * @param gigabyte         Hard disk capacity in GB
-     * @param ram              RAM in GB
-     * @param performanceType  Performance category (HIGH/LOW)
-     * @throws IllegalArgumentException if input validation fails
-     */
     public Laptop(UUID id, String brand, String model, int gigabyte, int ram, PerformanceTypeEnum performanceType) {
         validateInput(brand, model, gigabyte, ram, performanceType);
         
@@ -121,7 +104,7 @@ public class Laptop extends ModelObservable {
         
         String oldValue = this.brand;
         this.brand = brand;
-        notifyPropertyChanged("brand", oldValue, brand);
+        support.firePropertyChange("brand", oldValue, brand);
     }
 
     public void setModel(String model) {
@@ -131,7 +114,7 @@ public class Laptop extends ModelObservable {
         
         String oldValue = this.model;
         this.model = model;
-        notifyPropertyChanged("model", oldValue, model);
+        support.firePropertyChange("model", oldValue, model);
     }
 
     public void setGigabyte(int gigabyte) {
@@ -141,7 +124,7 @@ public class Laptop extends ModelObservable {
         
         int oldValue = this.gigabyte;
         this.gigabyte = gigabyte;
-        notifyPropertyChanged("gigabyte", oldValue, gigabyte);
+        support.firePropertyChange("gigabyte", oldValue, gigabyte);
     }
 
     public void setRam(int ram) {
@@ -151,7 +134,7 @@ public class Laptop extends ModelObservable {
         
         int oldValue = this.ram;
         this.ram = ram;
-        notifyPropertyChanged("ram", oldValue, ram);
+        support.firePropertyChange("ram", oldValue, ram);
     }
 
     public void setPerformanceType(PerformanceTypeEnum performanceType) {
@@ -161,7 +144,7 @@ public class Laptop extends ModelObservable {
         
         PerformanceTypeEnum oldValue = this.performanceType;
         this.performanceType = performanceType;
-        notifyPropertyChanged("performanceType", oldValue, performanceType);
+        support.firePropertyChange("performanceType", oldValue, performanceType);
     }
 
     /**
@@ -200,14 +183,14 @@ public class Laptop extends ModelObservable {
         String newStateName = this.getStateClassName();
 
         // Notify observers about state change
-        notifyPropertyChanged("state", oldState, newState);
-        notifyPropertyChanged("stateClassName", oldStateName, newStateName);
+        support.firePropertyChange("state", oldState, newState);
+        support.firePropertyChange("stateClassName", oldStateName, newStateName);
 
         // Specific event when laptop becomes available
         if (newState instanceof AvailableState) {
-            notifyPropertyChanged("available", false, true);
+            support.firePropertyChange("available", false, true);
         } else if (oldState instanceof AvailableState) {
-            notifyPropertyChanged("available", true, false);
+            support.firePropertyChange("available", true, false);
         }
     }
 
@@ -243,5 +226,28 @@ public class Laptop extends ModelObservable {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+
+    // Observer add / romove listener metoder
+
+    @Override
+    public void addListener(PropertyChangeListener listener) {
+
+    }
+
+    @Override
+    public void removeListener(PropertyChangeListener listener) {
+
+    }
+
+    @Override
+    public void addListener(String propertyName, PropertyChangeListener listener) {
+
+    }
+
+    @Override
+    public void removeListener(String propertyName, PropertyChangeListener listener) {
+
     }
 }

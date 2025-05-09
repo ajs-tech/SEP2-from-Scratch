@@ -1,8 +1,10 @@
 package objects;
 
 import enums.PerformanceTypeEnum;
-import util.ModelObservable;
+import util.PropertyChangeSubjectInterface;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.Date;
 import java.util.Objects;
 
@@ -10,7 +12,7 @@ import java.util.Objects;
  * Represents a student in the loan system.
  * Uses Java's built-in Observable pattern.
  */
-public class Student extends ModelObservable {
+public class Student implements PropertyChangeSubjectInterface {
     private int viaId;
     private String name;
     private Date degreeEndDate;
@@ -19,19 +21,9 @@ public class Student extends ModelObservable {
     private int phoneNumber;
     private boolean hasLaptop;
     private PerformanceTypeEnum performanceNeeded;
+    private PropertyChangeSupport support;
 
-    /**
-     * Creates a new student.
-     *
-     * @param name              Student's name
-     * @param degreeEndDate     End date for education
-     * @param degreeTitle       Education title
-     * @param viaId             Unique VIA ID
-     * @param email             Email address
-     * @param phoneNumber       Phone number
-     * @param performanceNeeded model.models.Laptop performance needs (HIGH/LOW)
-     * @throws IllegalArgumentException if input validation fails
-     */
+
     public Student(String name, Date degreeEndDate, String degreeTitle, int viaId,
                    String email, int phoneNumber, PerformanceTypeEnum performanceNeeded) {
         validateInput(name, degreeEndDate, degreeTitle, viaId, email, phoneNumber, performanceNeeded);
@@ -44,62 +36,55 @@ public class Student extends ModelObservable {
         this.phoneNumber = phoneNumber;
         this.hasLaptop = false;
         this.performanceNeeded = performanceNeeded;
+        support = new PropertyChangeSupport(this);
     }
-    
-    /**
-     * Validates all input parameters.
-     * Throws exception with clear message about which validation failed.
-     */
-    private void validateInput(String name, Date degreeEndDate, String degreeTitle, 
-                               int viaId, String email, int phoneNumber, 
+
+    // Hjælpe metode for konstruktøren for oprettelse
+
+    private void validateInput(String name, Date degreeEndDate, String degreeTitle,
+                               int viaId, String email, int phoneNumber,
                                PerformanceTypeEnum performanceNeeded) {
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Student name cannot be empty");
         }
-        
+
         if (degreeEndDate == null) {
             throw new IllegalArgumentException("Degree end date cannot be null");
         }
-        
+
         if (degreeTitle == null || degreeTitle.trim().isEmpty()) {
             throw new IllegalArgumentException("Degree title cannot be empty");
         }
-        
+
         if (viaId <= 0 || !isValidViaId(viaId)) {
             throw new IllegalArgumentException("Invalid VIA ID format");
         }
-        
+
         if (email == null || !isValidEmail(email)) {
             throw new IllegalArgumentException("Invalid email format");
         }
-        
+
         if (phoneNumber <= 0 || !isValidPhoneNumber(phoneNumber)) {
             throw new IllegalArgumentException("Invalid phone number format");
         }
-        
+
         if (performanceNeeded == null) {
             throw new IllegalArgumentException("Performance needed cannot be null");
         }
     }
 
-    /**
-     * Validates email format.
-     */
+
     private boolean isValidEmail(String email) {
         return email != null && email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
     }
 
-    /**
-     * Validates VIA ID format.
-     */
+
     private boolean isValidViaId(int viaId) {
         String viaIdStr = String.valueOf(viaId);
         return viaIdStr.matches("^[0-9]{4,8}$");
     }
 
-    /**
-     * Validates phone number format.
-     */
+
     private boolean isValidPhoneNumber(int phoneNumber) {
         String phoneStr = String.valueOf(phoneNumber);
         return phoneStr.matches("^[0-9]{8,12}$");
@@ -148,7 +133,7 @@ public class Student extends ModelObservable {
         
         String oldValue = this.name;
         this.name = name;
-        notifyPropertyChanged("name", oldValue, name);
+        support.firePropertyChange("name", oldValue, name);
     }
 
     public void setDegreeEndDate(Date degreeEndDate) {
@@ -158,7 +143,7 @@ public class Student extends ModelObservable {
         
         Date oldValue = this.degreeEndDate;
         this.degreeEndDate = degreeEndDate;
-        notifyPropertyChanged("degreeEndDate", oldValue, degreeEndDate);
+        support.firePropertyChange("degreeEndDate", oldValue, degreeEndDate);
     }
 
     public void setDegreeTitle(String degreeTitle) {
@@ -168,7 +153,7 @@ public class Student extends ModelObservable {
         
         String oldValue = this.degreeTitle;
         this.degreeTitle = degreeTitle;
-        notifyPropertyChanged("degreeTitle", oldValue, degreeTitle);
+        support.firePropertyChange("degreeTitle", oldValue, degreeTitle);
     }
 
     public void setEmail(String email) {
@@ -178,7 +163,7 @@ public class Student extends ModelObservable {
         
         String oldValue = this.email;
         this.email = email;
-        notifyPropertyChanged("email", oldValue, email);
+        support.firePropertyChange("email", oldValue, email);
     }
 
     public void setPhoneNumber(int phoneNumber) {
@@ -188,7 +173,7 @@ public class Student extends ModelObservable {
         
         int oldValue = this.phoneNumber;
         this.phoneNumber = phoneNumber;
-        notifyPropertyChanged("phoneNumber", oldValue, phoneNumber);
+        support.firePropertyChange("phoneNumber", oldValue, phoneNumber);
     }
 
     public void setPerformanceNeeded(PerformanceTypeEnum performanceNeeded) {
@@ -198,28 +183,14 @@ public class Student extends ModelObservable {
         
         PerformanceTypeEnum oldValue = this.performanceNeeded;
         this.performanceNeeded = performanceNeeded;
-        notifyPropertyChanged("performanceNeeded", oldValue, performanceNeeded);
+        support.firePropertyChange("performanceNeeded", oldValue, performanceNeeded);
     }
 
-    /**
-     * Toggles the hasLaptop value and notifies observers.
-     */
-    public void setHasLaptopToOpposite() {
-        boolean oldValue = this.hasLaptop;
-        boolean newValue = !oldValue;
-        this.hasLaptop = newValue;
-        notifyPropertyChanged("hasLaptop", oldValue, newValue);
-    }
 
-    /**
-     * Sets the hasLaptop value directly.
-     *
-     * @param hasLaptop The new value
-     */
     public void setHasLaptop(boolean hasLaptop) {
         boolean oldValue = this.hasLaptop;
         this.hasLaptop = hasLaptop;
-        notifyPropertyChanged("hasLaptop", oldValue, hasLaptop);
+        support.firePropertyChange("hasLaptop", oldValue, hasLaptop);
     }
 
     @Override
@@ -238,5 +209,27 @@ public class Student extends ModelObservable {
     @Override
     public int hashCode() {
         return Objects.hash(viaId);
+    }
+
+    // Observer add / romove listener metoder
+
+    @Override
+    public void addListener(PropertyChangeListener listener) {
+
+    }
+
+    @Override
+    public void removeListener(PropertyChangeListener listener) {
+
+    }
+
+    @Override
+    public void addListener(String propertyName, PropertyChangeListener listener) {
+
+    }
+
+    @Override
+    public void removeListener(String propertyName, PropertyChangeListener listener) {
+
     }
 }
