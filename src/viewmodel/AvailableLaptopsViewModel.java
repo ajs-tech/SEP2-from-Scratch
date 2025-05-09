@@ -12,7 +12,7 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 
 /**
- * ViewModel for visning af tilgængelige laptops.
+ * ViewModel for visning af tilxgængelige laptops.
  * Håndterer data og logik for AvailableLaptopsView.
  */
 public class AvailableLaptopsViewModel implements PropertyChangeListener {

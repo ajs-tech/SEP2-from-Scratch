@@ -1,6 +1,6 @@
 package view.Controller;
 
-import view.ViewHandler;
+import core.ViewHandler;
 import core.ViewModelFactory;
 
 /**
