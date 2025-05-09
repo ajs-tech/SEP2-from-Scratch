@@ -6,11 +6,10 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import model.enums.ReservationStatusEnum;
-import model.logic.DataModel;
-import model.models.Laptop;
-import model.models.Reservation;
-import model.models.Student;
+import alt.logic.DataModel;
+import alt.models.Laptop;
+import alt.models.Reservation;
+import alt.models.Student;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

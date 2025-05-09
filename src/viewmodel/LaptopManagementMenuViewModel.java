@@ -2,7 +2,7 @@ package viewmodel;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import model.logic.DataModel;
+import alt.logic.DataModel;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

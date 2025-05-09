@@ -3,9 +3,9 @@ package viewmodel;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import model.enums.PerformanceTypeEnum;
-import model.logic.DataModel;
-import model.models.Laptop;
+import alt.enums.PerformanceTypeEnum;
+import alt.logic.DataModel;
+import alt.models.Laptop;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -112,7 +112,7 @@ public class AvailableLaptopsViewModel implements PropertyChangeListener {
       if (laptop.isAvailable()) {
         LaptopData laptopData = convertToLaptopData(laptop);
 
-        if (laptop.getPerformanceType() == PerformanceTypeEnum.HIGH) {
+        if (PerformanceTypeEnum.HIGH == laptop.getPerformanceType()) {
           highPerformanceLaptops.add(laptopData);
         } else {
           lowPerformanceLaptops.add(laptopData);
