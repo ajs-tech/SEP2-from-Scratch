@@ -6,7 +6,8 @@ import viewmodel.*;
 
 public class ViewmModelFactory {
     private static ViewmModelFactory INSTANCE;
-    private Model laptopRentModel;
+    private Model model;
+
     private AvailableLaptopsViewModel availableLaptopsViewModel;
     private CreateStudentViewModel createStudentViewModel;
     private LaptopManagementMenuViewModel laptopManagementMenuViewModel;
@@ -14,12 +15,12 @@ public class ViewmModelFactory {
     private ReturnLaptopViewModel returnLaptopViewModel;
 
     private ViewmModelFactory(){
-        laptopRentModel = new ModelImpl();
-        availableLaptopsViewModel = new AvailableLaptopsViewModel(laptopRentModel);
-        createStudentViewModel = new CreateStudentViewModel(laptopRentModel);
-        laptopManagementMenuViewModel = new LaptopManagementMenuViewModel(laptopRentModel);
-        loanOverviewViewModel = new LoanOverviewViewModel(laptopRentModel);
-        returnLaptopViewModel = new ReturnLaptopViewModel(laptopRentModel);
+        model = ModelImpl.getInstance();
+        availableLaptopsViewModel = new AvailableLaptopsViewModel(model);
+        createStudentViewModel = new CreateStudentViewModel(model);
+        laptopManagementMenuViewModel = new LaptopManagementMenuViewModel(model);
+        loanOverviewViewModel = new LoanOverviewViewModel(model);
+        returnLaptopViewModel = new ReturnLaptopViewModel(model);
     }
 
     public static ViewmModelFactory getInstance(){
@@ -35,7 +36,7 @@ public class ViewmModelFactory {
     }
 
     public Model getLaptopRentModel(){
-        return laptopRentModel;
+        return model;
     }
 
     public AvailableLaptopsViewModel getAvailableLaptopsViewModel(){

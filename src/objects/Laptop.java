@@ -9,10 +9,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.Objects;
 import java.util.UUID;
 
-/**
- * Represents a laptop in the loan system.
- * Uses Java's built-in Observable pattern and State pattern.
- */
+
 public class Laptop implements PropertyChangeSubjectInterface {
     private UUID id;
     private String brand;
@@ -22,6 +19,8 @@ public class Laptop implements PropertyChangeSubjectInterface {
     private PerformanceTypeEnum performanceType;
     private LaptopState state;
     private PropertyChangeSupport support;
+
+    public static final String EVENT_LAPTOPSTATE_CHANGED = "LAPTOPSTATE_UPDATED";
 
     public Laptop(String brand, String model, int gigabyte, int ram, PerformanceTypeEnum performanceType) {
         this(UUID.randomUUID(), brand, model, gigabyte, ram, performanceType);
@@ -148,57 +147,41 @@ public class Laptop implements PropertyChangeSubjectInterface {
         support.firePropertyChange("performanceType", oldValue, performanceType);
     }
 
-    /**
-     * Gets the state class name for use with the database
-     */
-    public String getStateClassName() {
+
+    public String getStateClassSimpleName() {
         return state.getClass().getSimpleName();
     }
 
-    /**
-     * Checks if laptop is available
-     * @return true if laptop is in Available state
-     */
+
     public boolean isAvailable() {
         return state instanceof AvailableState;
     }
 
-    /**
-     * Checks if laptop is loaned
-     * @return true if laptop is in Loaned state
-     */
+
     public boolean isLoaned() {
         return state instanceof LoanedState;
     }
 
-    /**
-     * Changes the laptop's state
-     * Notifies observers when state changes to Available
-     *
-     * @param newState The new state
-     */
+
     public void changeState(LaptopState newState) {
         LaptopState oldState = this.state;
-        String oldStateName = this.getStateClassName();
+        String oldStateName = oldState.getSimpleName();
         this.state = newState;
-        String newStateName = this.getStateClassName();
+        String newStateName = this.getStateClassSimpleName();
 
-        // Notify observers about state change
-        support.firePropertyChange("state", oldState, newState);
-        support.firePropertyChange("stateClassName", oldStateName, newStateName);
+        support.firePropertyChange(EVENT_LAPTOPSTATE_CHANGED, oldStateName, newStateName);
 
-        // Specific event when laptop becomes available
-        if (newState instanceof AvailableState) {
-            support.firePropertyChange("available", false, true);
-        } else if (oldState instanceof AvailableState) {
-            support.firePropertyChange("available", true, false);
-        }
+
+
+//        // Specific event when laptop becomes available
+//        if (newState instanceof AvailableState) {
+//            support.firePropertyChange("available", false, true);
+//        } else if (oldState instanceof AvailableState) {
+//            support.firePropertyChange("available", true, false);
+//        }
     }
 
-    /**
-     * Sets the laptop state based on the class name from the database
-     * @param stateName name of the state class (e.g. "model.models.AvailableState" or "LoanedState")
-     */
+
     public void setStateFromDatabase(String stateName) {
         if ("LoanedState".equals(stateName)) {
             if (!(state instanceof LoanedState)) {
@@ -209,6 +192,10 @@ public class Laptop implements PropertyChangeSubjectInterface {
                 changeState(new AvailableState());
             }
         }
+    }
+
+    public void setState(){
+        state.click(this);
     }
 
     @Override

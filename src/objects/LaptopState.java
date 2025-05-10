@@ -6,18 +6,6 @@ package objects;
  */
 public interface LaptopState {
 
-    /**
-     * Handles click/state change on a laptop.
-     * Implemented specifically for each concrete state.
-     *
-     * @param laptop model.models.Laptop object whose state should be changed
-     */
     void click(Laptop laptop);
-
-    /**
-     * Returns a user-friendly description of the state.
-     *
-     * @return User-friendly description of the state
-     */
-    String getDisplayName();
+    String getSimpleName();
 }

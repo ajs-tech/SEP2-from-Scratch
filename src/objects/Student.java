@@ -19,7 +19,7 @@ public class Student implements PropertyChangeSubjectInterface {
     private String degreeTitle;
     private String email;
     private int phoneNumber;
-    private boolean hasLaptop;
+    // private boolean hasLaptop;
     private PerformanceTypeEnum performanceNeeded;
     private PropertyChangeSupport support;
 
@@ -34,7 +34,7 @@ public class Student implements PropertyChangeSubjectInterface {
         this.viaId = viaId;
         this.email = email;
         this.phoneNumber = phoneNumber;
-        this.hasLaptop = false;
+        // this.hasLaptop = false;
         this.performanceNeeded = performanceNeeded;
         support = new PropertyChangeSupport(this);
     }
@@ -120,9 +120,9 @@ public class Student implements PropertyChangeSubjectInterface {
         return performanceNeeded;
     }
 
-    public boolean isHasLaptop() {
+    /*public boolean isHasLaptop() {
         return hasLaptop;
-    }
+    }*/
 
     // Setters
 
@@ -187,11 +187,11 @@ public class Student implements PropertyChangeSubjectInterface {
     }
 
 
-    public void setHasLaptop(boolean hasLaptop) {
+    /*public void setHasLaptop(boolean hasLaptop) {
         boolean oldValue = this.hasLaptop;
         this.hasLaptop = hasLaptop;
         support.firePropertyChange("hasLaptop", oldValue, hasLaptop);
-    }
+    }*/
 
     @Override
     public String toString() {

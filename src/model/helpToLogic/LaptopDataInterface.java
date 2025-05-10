@@ -14,6 +14,6 @@ public interface LaptopDataInterface {
     Laptop seeNextAvailableLaptop(PerformanceTypeEnum performanceTypeEnum);
     Laptop getLaptopByUUID(UUID id);
     Laptop createLaptop(String brand, String model, int gigabyte, int ram, PerformanceTypeEnum performanceType);
-    Laptop updateLaptopState(UUID id, LaptopState laptopState);
+    Laptop updateLaptopState(UUID id);
     Laptop deleteLaptop(UUID id);
 }

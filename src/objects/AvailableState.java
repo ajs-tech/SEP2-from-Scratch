@@ -4,33 +4,22 @@ package objects;
  * Concrete implementation of LaptopState for laptops that are available.
  * Part of State Pattern.
  */
-class AvailableState implements LaptopState {
+public class AvailableState implements LaptopState {
+    public final static String simpleName = "AvailableState";
 
-    /**
-     * When a laptop in available state is "clicked", the state changes to loaned.
-     *
-     * @param laptop model.models.Laptop object whose state should be changed
-     */
+
     @Override
     public void click(Laptop laptop) {
         laptop.changeState(new LoanedState());
     }
 
-    /**
-     * Returns a user-friendly description of the state.
-     *
-     * @return Display name for this state
-     */
     @Override
-    public String getDisplayName() {
-        return "Available";
+    public String getSimpleName() {
+        return this.getClass().getSimpleName();
     }
 
-    /**
-     * String representation of the object, primarily used for debugging.
-     */
     @Override
     public String toString() {
-        return "model.models.AvailableState";
+        return getSimpleName();
     }
 }
