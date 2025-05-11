@@ -29,7 +29,8 @@ public class SocketClientImp implements SocketClient, LaptopDataInterface, Stude
         support = new PropertyChangeSupport(this);
         try {
             System.out.println("Connecting to server");
-            socket =
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
