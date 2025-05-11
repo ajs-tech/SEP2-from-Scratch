@@ -1,52 +1,38 @@
-package model;
+package client.network;
 
-import client.network.SocketClient;
-import core.ClientFactory;
 import enums.PerformanceTypeEnum;
-import model.helpToLogic.*;
+import model.helpToLogic.LaptopDataInterface;
+import model.helpToLogic.ReservationsDataInterface;
+import model.helpToLogic.StudentDataInterface;
 import objects.Laptop;
 import objects.Reservation;
 import objects.Student;
 import util.PropertyChangeSubjectInterface;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+public class SocketClientImp implements SocketClient, LaptopDataInterface, StudentDataInterface, ReservationsDataInterface, PropertyChangeSubjectInterface {
+    private ObjectInputStream inFromServer;
+    private ObjectOutputStream outFromServer;
+    private SocketClient socket;
+    private PropertyChangeSupport support;
 
-public class ModelImpl implements Model, LaptopDataInterface, StudentDataInterface, ReservationsDataInterface,PropertyChangeListener, PropertyChangeSubjectInterface {
-
-    private static ModelImpl INSTANCE;
-    private LaptopData laptopData;
-    private StudentData studentData;
-    private ReservationData reservationData;
-    private SocketClient client;
-
-
-    private ModelImpl(){
-        laptopData = new LaptopData();
-        studentData = new StudentData();
-        reservationData = new ReservationData();
-        laptopData.addListener(this);
-        studentData.addListener(this);
-        reservationData.addListener(this);
-        client = ClientFactory.getClient();
-    }
-
-    public static ModelImpl getInstance(){
-        if (INSTANCE == null){
-            synchronized (ModelImpl.class){
-                if (INSTANCE == null){
-                    INSTANCE = new ModelImpl();
-                    return INSTANCE;
-                }
-            }
+    public SocketClientImp(String socketHost, int socketPort){
+        support = new PropertyChangeSupport(this);
+        try {
+            System.out.println("Connecting to server");
+            socket =
         }
-        return INSTANCE;
     }
+
 
     // Laptop data interface metoder
 
@@ -154,15 +140,7 @@ public class ModelImpl implements Model, LaptopDataInterface, StudentDataInterfa
         return false;
     }
 
-
-    // metoden fra listener interface
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-
-    }
-
-    // metoderne fra subject interface (bruges med support!)
-
+    // Property change subject metoder (bruges med support)
 
     @Override
     public void addListener(PropertyChangeListener listener) {

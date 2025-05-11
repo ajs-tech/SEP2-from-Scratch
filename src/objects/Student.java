@@ -211,7 +211,7 @@ public class Student implements PropertyChangeSubjectInterface {
         return Objects.hash(viaId);
     }
 
-    // Observer add / romove listener metoder
+    // Observer add / remove listener metoder
 
     @Override
     public void addListener(PropertyChangeListener listener) {

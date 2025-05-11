@@ -18,6 +18,8 @@ public class Reservation implements PropertyChangeSubjectInterface {
     private final Date creationDate;
     private PropertyChangeSupport support;
 
+    public static String EVENT_CHANGEDSTATUS = "EVENT_CHANGEDSTATUS";
+
 
 
     public Reservation(Student student, Laptop laptop) {
@@ -98,10 +100,6 @@ public class Reservation implements PropertyChangeSubjectInterface {
         ReservationStatusEnum oldStatus = this.status;
         this.status = newStatus;
 
-
-        support.firePropertyChange("status", oldStatus, newStatus);
-
-        // If a reservation is completed, update laptop and student state
         if (oldStatus == ReservationStatusEnum.ACTIVE &&
                 (newStatus == ReservationStatusEnum.COMPLETED || newStatus == ReservationStatusEnum.CANCELLED)) {
 
@@ -111,14 +109,7 @@ public class Reservation implements PropertyChangeSubjectInterface {
                 reservedLaptop.changeState(new AvailableState());
             }
 
-            // Update student has laptop status if necessary
-            Student reservedStudent = student;
-            if (reservedStudent.isHasLaptop()) {
-                reservedStudent.setHasLaptop(false);
-            }
-
-            // Notify that the reservation is completed
-            support.firePropertyChange("completed", false, true);
+            support.firePropertyChange(EVENT_CHANGEDSTATUS, oldStatus, newStatus);
         }
     }
 
@@ -141,25 +132,25 @@ public class Reservation implements PropertyChangeSubjectInterface {
         return Objects.hash(reservationId);
     }
 
-    // Observer add / romove listener metoder
+    // Observer metoder (tilføjet lyttere)
 
     @Override
     public void addListener(PropertyChangeListener listener) {
-
+        support.addPropertyChangeListener(listener);
     }
 
     @Override
     public void removeListener(PropertyChangeListener listener) {
-
+        support.removePropertyChangeListener(listener);
     }
 
     @Override
     public void addListener(String propertyName, PropertyChangeListener listener) {
-
+        support.addPropertyChangeListener(propertyName, listener);
     }
 
     @Override
     public void removeListener(String propertyName, PropertyChangeListener listener) {
-
+        support.removePropertyChangeListener(propertyName, listener);
     }
 }
