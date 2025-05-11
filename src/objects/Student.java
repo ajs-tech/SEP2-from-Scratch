@@ -19,7 +19,6 @@ public class Student implements PropertyChangeSubjectInterface {
     private String degreeTitle;
     private String email;
     private int phoneNumber;
-    // private boolean hasLaptop;
     private PerformanceTypeEnum performanceNeeded;
     private PropertyChangeSupport support;
 
@@ -27,14 +26,13 @@ public class Student implements PropertyChangeSubjectInterface {
     public Student(String name, Date degreeEndDate, String degreeTitle, int viaId,
                    String email, int phoneNumber, PerformanceTypeEnum performanceNeeded) {
         validateInput(name, degreeEndDate, degreeTitle, viaId, email, phoneNumber, performanceNeeded);
-        
+
         this.name = name;
         this.degreeEndDate = degreeEndDate;
         this.degreeTitle = degreeTitle;
         this.viaId = viaId;
         this.email = email;
         this.phoneNumber = phoneNumber;
-        // this.hasLaptop = false;
         this.performanceNeeded = performanceNeeded;
         support = new PropertyChangeSupport(this);
     }
@@ -120,9 +118,6 @@ public class Student implements PropertyChangeSubjectInterface {
         return performanceNeeded;
     }
 
-    /*public boolean isHasLaptop() {
-        return hasLaptop;
-    }*/
 
     // Setters
 
@@ -130,7 +125,7 @@ public class Student implements PropertyChangeSubjectInterface {
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Student name cannot be empty");
         }
-        
+
         String oldValue = this.name;
         this.name = name;
         support.firePropertyChange("name", oldValue, name);
@@ -140,7 +135,7 @@ public class Student implements PropertyChangeSubjectInterface {
         if (degreeEndDate == null) {
             throw new IllegalArgumentException("Degree end date cannot be null");
         }
-        
+
         Date oldValue = this.degreeEndDate;
         this.degreeEndDate = degreeEndDate;
         support.firePropertyChange("degreeEndDate", oldValue, degreeEndDate);
@@ -150,7 +145,7 @@ public class Student implements PropertyChangeSubjectInterface {
         if (degreeTitle == null || degreeTitle.trim().isEmpty()) {
             throw new IllegalArgumentException("Degree title cannot be empty");
         }
-        
+
         String oldValue = this.degreeTitle;
         this.degreeTitle = degreeTitle;
         support.firePropertyChange("degreeTitle", oldValue, degreeTitle);
@@ -160,7 +155,7 @@ public class Student implements PropertyChangeSubjectInterface {
         if (email == null || !isValidEmail(email)) {
             throw new IllegalArgumentException("Invalid email format");
         }
-        
+
         String oldValue = this.email;
         this.email = email;
         support.firePropertyChange("email", oldValue, email);
@@ -170,7 +165,7 @@ public class Student implements PropertyChangeSubjectInterface {
         if (phoneNumber <= 0 || !isValidPhoneNumber(phoneNumber)) {
             throw new IllegalArgumentException("Invalid phone number format");
         }
-        
+
         int oldValue = this.phoneNumber;
         this.phoneNumber = phoneNumber;
         support.firePropertyChange("phoneNumber", oldValue, phoneNumber);
@@ -180,18 +175,12 @@ public class Student implements PropertyChangeSubjectInterface {
         if (performanceNeeded == null) {
             throw new IllegalArgumentException("Performance needed cannot be null");
         }
-        
+
         PerformanceTypeEnum oldValue = this.performanceNeeded;
         this.performanceNeeded = performanceNeeded;
         support.firePropertyChange("performanceNeeded", oldValue, performanceNeeded);
     }
 
-
-    /*public void setHasLaptop(boolean hasLaptop) {
-        boolean oldValue = this.hasLaptop;
-        this.hasLaptop = hasLaptop;
-        support.firePropertyChange("hasLaptop", oldValue, hasLaptop);
-    }*/
 
     @Override
     public String toString() {
