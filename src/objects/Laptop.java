@@ -20,7 +20,14 @@ public class Laptop implements PropertyChangeSubjectInterface {
     private LaptopState state;
     private PropertyChangeSupport support;
 
-    public static final String EVENT_LAPTOPSTATE_CHANGED = "LAPTOPSTATE_UPDATED";
+    public static final String EVENT_BRAND_CHANGED = "laptop_brand_changed";
+    public static final String EVENT_MODEL_CHANGED = "laptop_model_changed";
+    public static final String EVENT_RAM_CHANGED = "laptop_ram_changed";
+    public static final String EVENT_DISK_CHANGED = "laptop_disk_changed";
+    public static final String EVENT_PERFORMANCE_CHANGED = "laptop_performance_changed";
+    public static final String EVENT_STATE_CHANGED = "laptop_state_changed";
+    public static final String EVENT_AVAILABILITY_CHANGED = "laptop_availability_changed";
+
 
     public Laptop(String brand, String model, int gigabyte, int ram, PerformanceTypeEnum performanceType) {
         this(UUID.randomUUID(), brand, model, gigabyte, ram, performanceType);
@@ -104,7 +111,6 @@ public class Laptop implements PropertyChangeSubjectInterface {
         
         String oldValue = this.brand;
         this.brand = brand;
-        support.firePropertyChange("brand", oldValue, brand);
     }
 
     public void setModel(String model) {
@@ -114,7 +120,6 @@ public class Laptop implements PropertyChangeSubjectInterface {
         
         String oldValue = this.model;
         this.model = model;
-        support.firePropertyChange("model", oldValue, model);
     }
 
     public void setGigabyte(int gigabyte) {
@@ -124,7 +129,6 @@ public class Laptop implements PropertyChangeSubjectInterface {
         
         int oldValue = this.gigabyte;
         this.gigabyte = gigabyte;
-        support.firePropertyChange("gigabyte", oldValue, gigabyte);
     }
 
     public void setRam(int ram) {
@@ -134,7 +138,6 @@ public class Laptop implements PropertyChangeSubjectInterface {
         
         int oldValue = this.ram;
         this.ram = ram;
-        support.firePropertyChange("ram", oldValue, ram);
     }
 
     public void setPerformanceType(PerformanceTypeEnum performanceType) {
@@ -144,7 +147,6 @@ public class Laptop implements PropertyChangeSubjectInterface {
         
         PerformanceTypeEnum oldValue = this.performanceType;
         this.performanceType = performanceType;
-        support.firePropertyChange("performanceType", oldValue, performanceType);
     }
 
 
@@ -166,19 +168,19 @@ public class Laptop implements PropertyChangeSubjectInterface {
     public void changeState(LaptopState newState) {
         LaptopState oldState = this.state;
         String oldStateName = oldState.getSimpleName();
+        boolean wasAvailable = this.isAvailable();
+
         this.state = newState;
-        String newStateName = this.getStateClassSimpleName();
 
-        support.firePropertyChange(EVENT_LAPTOPSTATE_CHANGED, oldStateName, newStateName);
+        String newStateName = newState.getSimpleName();
+        boolean isNowAvailable = this.isAvailable();
 
+        support.firePropertyChange(EVENT_STATE_CHANGED, oldStateName, newStateName);
 
-
-//        // Specific event when laptop becomes available
-//        if (newState instanceof AvailableState) {
-//            support.firePropertyChange("available", false, true);
-//        } else if (oldState instanceof AvailableState) {
-//            support.firePropertyChange("available", true, false);
-//        }
+        // Only fire availability event if it actually changed
+        if (wasAvailable != isNowAvailable) {
+            support.firePropertyChange(EVENT_AVAILABILITY_CHANGED, wasAvailable, isNowAvailable);
+        }
     }
 
 
@@ -217,7 +219,7 @@ public class Laptop implements PropertyChangeSubjectInterface {
     }
 
 
-    // Observer add / romove listener metoder
+    // Observer add / remove listener metoder
 
     @Override
     public void addListener(PropertyChangeListener listener) {

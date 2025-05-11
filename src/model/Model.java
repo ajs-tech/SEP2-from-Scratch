@@ -1,11 +1,9 @@
 package model;
 
-import objects.Laptop;
-import objects.Reservation;
-import objects.Student;
+import model.helpToLogic.LaptopDataInterface;
+import model.helpToLogic.ReservationsDataInterface;
+import model.helpToLogic.StudentDataInterface;
 
-import java.util.ArrayList;
-
-public interface Model {
+public interface Model extends LaptopDataInterface, StudentDataInterface, ReservationsDataInterface {
 
 }

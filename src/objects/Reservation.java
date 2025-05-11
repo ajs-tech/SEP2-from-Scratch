@@ -18,8 +18,9 @@ public class Reservation implements PropertyChangeSubjectInterface {
     private final Date creationDate;
     private PropertyChangeSupport support;
 
-    public static String EVENT_CHANGEDSTATUS = "EVENT_CHANGEDSTATUS";
-
+    public static final String EVENT_STATUS_CHANGED = "reservation_status_changed";
+    public static final String EVENT_COMPLETED = "reservation_completed";
+    public static final String EVENT_CANCELLED = "reservation_cancelled";
 
 
     public Reservation(Student student, Laptop laptop) {
@@ -100,16 +101,25 @@ public class Reservation implements PropertyChangeSubjectInterface {
         ReservationStatusEnum oldStatus = this.status;
         this.status = newStatus;
 
-        if (oldStatus == ReservationStatusEnum.ACTIVE &&
-                (newStatus == ReservationStatusEnum.COMPLETED || newStatus == ReservationStatusEnum.CANCELLED)) {
+        // Fire basic status change event
+        support.firePropertyChange(EVENT_STATUS_CHANGED, oldStatus, newStatus);
 
-            // Make laptop available again
-            Laptop reservedLaptop = laptop;
-            if (reservedLaptop.isLoaned()) {
-                reservedLaptop.changeState(new AvailableState());
+        // Additional events for specific status changes
+        if (oldStatus == ReservationStatusEnum.ACTIVE) {
+            if (newStatus == ReservationStatusEnum.COMPLETED) {
+                // Make laptop available again
+                if (laptop.isLoaned()) {
+                    laptop.changeState(new AvailableState());
+                }
+                support.firePropertyChange(EVENT_COMPLETED, oldStatus, newStatus);
             }
-
-            support.firePropertyChange(EVENT_CHANGEDSTATUS, oldStatus, newStatus);
+            else if (newStatus == ReservationStatusEnum.CANCELLED) {
+                // Make laptop available again
+                if (laptop.isLoaned()) {
+                    laptop.changeState(new AvailableState());
+                }
+                support.firePropertyChange(EVENT_CANCELLED, oldStatus, newStatus);
+            }
         }
     }
 

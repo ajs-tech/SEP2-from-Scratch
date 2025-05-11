@@ -16,12 +16,13 @@ import java.util.UUID;
 
 public class LaptopData implements LaptopDataInterface, PropertyChangeListener, PropertyChangeSubjectInterface {
 
-    // Event types for observer notifications
-    public static final String EVENT_LAPTOP_ADDED = "LAPTOP_ADDED";
-    public static final String EVENT_LAPTOPSTATE_UPDATED = "LAPTOPSTATE_UPDATED";
-    public static final String EVENT_LAPTOP_REMOVED = "LAPTOP_REMOVED";
-    public static final String EVENT_LAPTOPS_REFRESHED = "LAPTOPS_REFRESHED";
-    public static final String EVENT_ERROR = "ERROR";
+    public static final String EVENT_LAPTOP_ADDED = "laptopdata_laptop_added";
+    public static final String EVENT_LAPTOP_REMOVED = "laptopdata_laptop_removed";
+    public static final String EVENT_LAPTOP_UPDATED = "laptopdata_laptop_updated";
+    public static final String EVENT_LAPTOP_STATE_CHANGED = "laptopdata_state_changed";
+    public static final String EVENT_AVAILABLE_COUNT_CHANGED = "laptopdata_available_count_changed";
+    public static final String EVENT_LOANED_COUNT_CHANGED = "laptopdata_loaned_count_changed";
+    public static final String EVENT_LAPTOP_BECAME_AVAILABLE = "laptop_became_available";
 
     private List<Laptop> laptopCache;
     private PropertyChangeSupport support;
@@ -135,23 +136,36 @@ public class LaptopData implements LaptopDataInterface, PropertyChangeListener, 
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        Object source = evt.getSource();
         String propertyName = evt.getPropertyName();
 
-        if (source instanceof Laptop){
-            Laptop laptop = (Laptop) source;
+        if (evt.getSource() instanceof Laptop) {
+            Laptop laptop = (Laptop) evt.getSource();
 
-            if (EVENT_LAPTOPSTATE_UPDATED.equals(propertyName)){
-                String oldValue = (String) evt.getOldValue();
-                String newValue = (String) evt.getNewValue();
+            // Handle laptop state changes
+            if (Laptop.EVENT_STATE_CHANGED.equals(propertyName)) {
+                // First, notify about general state change
+                support.firePropertyChange(EVENT_LAPTOP_STATE_CHANGED,
+                        evt.getOldValue(),
+                        evt.getNewValue());
 
-                if (AvailableState.simpleName.equals(newValue)){
-                    // Søg efter student og tildel computer
-                    // Opdater UI
-                } else if (LoanedState.simpleName.equals(newValue)) {
-                    // Opdater UI
+                // Second, if availability changed, notify separately to update counts
+                // and potentially check queues
+                if (Laptop.EVENT_AVAILABILITY_CHANGED.equals(propertyName)) {
+                    boolean isNowAvailable = (boolean) evt.getNewValue();
+
+                    // Update available/loaned counts
+                    int availableCount = getAvailableLaptops().size();
+                    int loanedCount = getLoanedLaptops().size();
+
+                    // Notify about updated counts (for UI updates)
+                    support.firePropertyChange(EVENT_AVAILABLE_COUNT_CHANGED, null, availableCount);
+                    support.firePropertyChange(EVENT_LOANED_COUNT_CHANGED, null, loanedCount);
+
+                    // Specially notify if laptop became available (for queue processing)
+                    if (isNowAvailable) {
+                        support.firePropertyChange(EVENT_LAPTOP_BECAME_AVAILABLE, null, laptop);
+                    }
                 }
-
             }
         }
     }

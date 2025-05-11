@@ -16,6 +16,12 @@ public class StudentData implements StudentDataInterface, PropertyChangeListener
     private List<Student> studentsCache;
     private PropertyChangeSupport support;
 
+    public static final String EVENT_STUDENT_ADDED = "studentdata_student_added";
+    public static final String EVENT_STUDENT_REMOVED = "studentdata_student_removed";
+    public static final String EVENT_STUDENT_UPDATED = "studentdata_student_updated";
+    public static final String EVENT_STUDENT_COUNT_CHANGED = "studentdata_count_changed";
+
+
     public StudentData(){
         studentsCache = new ArrayList<>();
         support = new PropertyChangeSupport(this);
@@ -84,12 +90,14 @@ public class StudentData implements StudentDataInterface, PropertyChangeListener
     public Student createStudent(String name, Date degreeEndDate, String degreeTitle, int viaId, String email, int phoneNumber, PerformanceTypeEnum performanceNeeded) {
         Student student = new Student(name, degreeEndDate, degreeTitle, viaId, email, phoneNumber, performanceNeeded);
         student.addListener(this);
+        support.firePropertyChange(EVENT_STUDENT_ADDED, null, student);
         return student;
     }
 
     @Override
     public boolean deleteStudent(int viaId) {
         if (studentsCache.remove(getStudentByID(viaId))){
+            support.firePropertyChange(EVENT_STUDENT_REMOVED, null, true);
             return true;
         } else return false;
     }
@@ -98,7 +106,13 @@ public class StudentData implements StudentDataInterface, PropertyChangeListener
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
+        String propertyName = evt.getPropertyName();
 
+        if (Student.EVENT_NAME_CHANGED.equals(propertyName)){
+            Student student = (Student) evt.getSource();
+
+            support.firePropertyChange(EVENT_STUDENT_UPDATED, null, student);
+        }
     }
 
 

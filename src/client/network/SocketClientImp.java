@@ -19,7 +19,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-public class SocketClientImp implements SocketClient, LaptopDataInterface, StudentDataInterface, ReservationsDataInterface, PropertyChangeSubjectInterface {
+public class SocketClientImp implements SocketClient, PropertyChangeSubjectInterface {
     private ObjectInputStream inFromServer;
     private ObjectOutputStream outFromServer;
     private SocketClient socket;
