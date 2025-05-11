@@ -7,7 +7,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="view.fxmlFiler.LaptopManagementMenuController"
+            fx:controller="view.controllers.LaptopManagementMenuController"
             prefHeight="500.0" prefWidth="500.0">
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
@@ -28,8 +28,8 @@
                 <Insets top="30" right="0" bottom="0" left="0"/>
             </padding>
 
-            <Button fx:id="loanButton" text="Udlån Computer"
-                    onAction="#handleLoanLaptop"
+            <Button fx:id="createStudentButton" text="opret studerende og Udlån"
+                    onAction="#handleCreateStudent"
                     prefWidth="250" prefHeight="40">
                 <font>
                     <Font name="Arial" size="14.0"/>
@@ -70,3 +70,4 @@
         </VBox>
     </center>
 </BorderPane>
+
