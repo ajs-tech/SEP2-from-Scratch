@@ -5,6 +5,7 @@ import util.PropertyChangeSubjectInterface;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
 
@@ -12,7 +13,9 @@ import java.util.Objects;
  * Represents a student in the loan system.
  * Uses Java's built-in Observable pattern.
  */
-public class Student implements PropertyChangeSubjectInterface {
+public class Student implements PropertyChangeSubjectInterface, Serializable {
+    private static final long serialVersionUID = 2L;
+
     private int viaId;
     private String name;
     private Date degreeEndDate;
@@ -20,7 +23,7 @@ public class Student implements PropertyChangeSubjectInterface {
     private String email;
     private int phoneNumber;
     private PerformanceTypeEnum performanceNeeded;
-    private PropertyChangeSupport support;
+    private transient PropertyChangeSupport support;
 
     public static final String EVENT_NAME_CHANGED = "student_name_changed";
     public static final String EVENT_EMAIL_CHANGED = "student_email_changed";
@@ -45,8 +48,7 @@ public class Student implements PropertyChangeSubjectInterface {
         support = new PropertyChangeSupport(this);
     }
 
-    // Hjælpe metode for konstruktøren for oprettelse
-
+    // Helper method for constructors for validation
     private void validateInput(String name, Date degreeEndDate, String degreeTitle,
                                int viaId, String email, int phoneNumber,
                                PerformanceTypeEnum performanceNeeded) {
@@ -136,7 +138,9 @@ public class Student implements PropertyChangeSubjectInterface {
 
         String oldValue = this.name;
         this.name = name;
-        support.firePropertyChange(EVENT_NAME_CHANGED, oldValue, name);
+        if (support != null) {
+            support.firePropertyChange(EVENT_NAME_CHANGED, oldValue, name);
+        }
     }
 
     public void setDegreeEndDate(Date degreeEndDate) {
@@ -146,7 +150,9 @@ public class Student implements PropertyChangeSubjectInterface {
 
         Date oldValue = this.degreeEndDate;
         this.degreeEndDate = degreeEndDate;
-        support.firePropertyChange(EVENT_DEGREEENDDATE_CHANGED, oldValue, degreeEndDate);
+        if (support != null) {
+            support.firePropertyChange(EVENT_DEGREEENDDATE_CHANGED, oldValue, degreeEndDate);
+        }
     }
 
     public void setDegreeTitle(String degreeTitle) {
@@ -156,7 +162,9 @@ public class Student implements PropertyChangeSubjectInterface {
 
         String oldValue = this.degreeTitle;
         this.degreeTitle = degreeTitle;
-        support.firePropertyChange(EVENT_DEGREE_CHANGED, oldValue, degreeTitle);
+        if (support != null) {
+            support.firePropertyChange(EVENT_DEGREE_CHANGED, oldValue, degreeTitle);
+        }
     }
 
     public void setEmail(String email) {
@@ -166,7 +174,9 @@ public class Student implements PropertyChangeSubjectInterface {
 
         String oldValue = this.email;
         this.email = email;
-        support.firePropertyChange(EVENT_EMAIL_CHANGED, oldValue, email);
+        if (support != null) {
+            support.firePropertyChange(EVENT_EMAIL_CHANGED, oldValue, email);
+        }
     }
 
     public void setPhoneNumber(int phoneNumber) {
@@ -176,7 +186,9 @@ public class Student implements PropertyChangeSubjectInterface {
 
         int oldValue = this.phoneNumber;
         this.phoneNumber = phoneNumber;
-        support.firePropertyChange(EVENT_PHONE_CHANGED, oldValue, phoneNumber);
+        if (support != null) {
+            support.firePropertyChange(EVENT_PHONE_CHANGED, oldValue, phoneNumber);
+        }
     }
 
     public void setPerformanceNeeded(PerformanceTypeEnum performanceNeeded) {
@@ -186,7 +198,9 @@ public class Student implements PropertyChangeSubjectInterface {
 
         PerformanceTypeEnum oldValue = this.performanceNeeded;
         this.performanceNeeded = performanceNeeded;
-        support.firePropertyChange(EVENT_PERFORMANCE_CHANGED, oldValue, performanceNeeded);
+        if (support != null) {
+            support.firePropertyChange(EVENT_PERFORMANCE_CHANGED, oldValue, performanceNeeded);
+        }
     }
 
 
@@ -208,25 +222,42 @@ public class Student implements PropertyChangeSubjectInterface {
         return Objects.hash(viaId);
     }
 
-    // Observer add / remove listener metoder
+    // This method is called during deserialization
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        // Initialize transient fields
+        this.support = new PropertyChangeSupport(this);
+    }
+
+    // Observer add / remove listener methods
 
     @Override
     public void addListener(PropertyChangeListener listener) {
-
+        if (support == null) {
+            support = new PropertyChangeSupport(this);
+        }
+        support.addPropertyChangeListener(listener);
     }
 
     @Override
     public void removeListener(PropertyChangeListener listener) {
-
+        if (support != null) {
+            support.removePropertyChangeListener(listener);
+        }
     }
 
     @Override
     public void addListener(String propertyName, PropertyChangeListener listener) {
-
+        if (support == null) {
+            support = new PropertyChangeSupport(this);
+        }
+        support.addPropertyChangeListener(propertyName, listener);
     }
 
     @Override
     public void removeListener(String propertyName, PropertyChangeListener listener) {
-
+        if (support != null) {
+            support.removePropertyChangeListener(propertyName, listener);
+        }
     }
 }

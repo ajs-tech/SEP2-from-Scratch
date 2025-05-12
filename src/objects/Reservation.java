@@ -5,18 +5,21 @@ import util.PropertyChangeSubjectInterface;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
 
 
-public class Reservation implements PropertyChangeSubjectInterface {
+public class Reservation implements PropertyChangeSubjectInterface, Serializable {
+    private static final long serialVersionUID = 3L;
+
     private final UUID reservationId;
     private final Student student;
     private final Laptop laptop;
     private ReservationStatusEnum status;
     private final Date creationDate;
-    private PropertyChangeSupport support;
+    private transient PropertyChangeSupport support;
 
     public static final String EVENT_STATUS_CHANGED = "reservation_status_changed";
     public static final String EVENT_COMPLETED = "reservation_completed";
@@ -36,6 +39,7 @@ public class Reservation implements PropertyChangeSubjectInterface {
         this.laptop = laptop;
         this.status = status;
         this.creationDate = creationDate;
+        this.support = new PropertyChangeSupport(this);
     }
 
 
@@ -102,25 +106,34 @@ public class Reservation implements PropertyChangeSubjectInterface {
         this.status = newStatus;
 
         // Fire basic status change event
-        support.firePropertyChange(EVENT_STATUS_CHANGED, oldStatus, newStatus);
+        if (support != null) {
+            support.firePropertyChange(EVENT_STATUS_CHANGED, oldStatus, newStatus);
 
-        // Additional events for specific status changes
-        if (oldStatus == ReservationStatusEnum.ACTIVE) {
-            if (newStatus == ReservationStatusEnum.COMPLETED) {
-                // Make laptop available again
-                if (laptop.isLoaned()) {
-                    laptop.changeState(new AvailableState());
+            // Additional events for specific status changes
+            if (oldStatus == ReservationStatusEnum.ACTIVE) {
+                if (newStatus == ReservationStatusEnum.COMPLETED) {
+                    // Make laptop available again
+                    if (laptop.isLoaned()) {
+                        laptop.changeState(new AvailableState());
+                    }
+                    support.firePropertyChange(EVENT_COMPLETED, oldStatus, newStatus);
                 }
-                support.firePropertyChange(EVENT_COMPLETED, oldStatus, newStatus);
-            }
-            else if (newStatus == ReservationStatusEnum.CANCELLED) {
-                // Make laptop available again
-                if (laptop.isLoaned()) {
-                    laptop.changeState(new AvailableState());
+                else if (newStatus == ReservationStatusEnum.CANCELLED) {
+                    // Make laptop available again
+                    if (laptop.isLoaned()) {
+                        laptop.changeState(new AvailableState());
+                    }
+                    support.firePropertyChange(EVENT_CANCELLED, oldStatus, newStatus);
                 }
-                support.firePropertyChange(EVENT_CANCELLED, oldStatus, newStatus);
             }
         }
+    }
+
+    // This method is called during deserialization
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        // Initialize transient fields
+        this.support = new PropertyChangeSupport(this);
     }
 
     @Override
@@ -142,25 +155,35 @@ public class Reservation implements PropertyChangeSubjectInterface {
         return Objects.hash(reservationId);
     }
 
-    // Observer metoder (tilføjet lyttere)
+    // Observer methods (added listeners)
 
     @Override
     public void addListener(PropertyChangeListener listener) {
+        if (support == null) {
+            support = new PropertyChangeSupport(this);
+        }
         support.addPropertyChangeListener(listener);
     }
 
     @Override
     public void removeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
+        if (support != null) {
+            support.removePropertyChangeListener(listener);
+        }
     }
 
     @Override
     public void addListener(String propertyName, PropertyChangeListener listener) {
+        if (support == null) {
+            support = new PropertyChangeSupport(this);
+        }
         support.addPropertyChangeListener(propertyName, listener);
     }
 
     @Override
     public void removeListener(String propertyName, PropertyChangeListener listener) {
-        support.removePropertyChangeListener(propertyName, listener);
+        if (support != null) {
+            support.removePropertyChangeListener(propertyName, listener);
+        }
     }
 }

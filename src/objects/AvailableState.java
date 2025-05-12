@@ -5,8 +5,8 @@ package objects;
  * Part of State Pattern.
  */
 public class AvailableState implements LaptopState {
+    private static final long serialVersionUID = 4L;
     public final static String simpleName = "AvailableState";
-
 
     @Override
     public void click(Laptop laptop) {
