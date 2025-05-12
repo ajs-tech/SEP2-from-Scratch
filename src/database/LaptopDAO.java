@@ -63,6 +63,36 @@ public class LaptopDAO implements GenericDAO<Laptop, UUID> {
     }
 
     /**
+     * Henter alle laptops med en bestemt performance type og tilstand.
+     *
+     * @param performanceType Performance typen at filtrere efter
+     * @return List af laptops med den angivne performance type
+     * @throws SQLException hvis der er problemer med databasen
+     */
+    public List<Laptop> getAvailableLaptopsByPerformance(PerformanceTypeEnum performanceType) throws SQLException {
+        List<Laptop> laptops = new ArrayList<>();
+        String sql = "SELECT laptop_uuid, brand, model, gigabyte, ram, performance_type, state " +
+                "FROM Laptop WHERE performance_type = ? AND state = 'AvailableState'";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, performanceType.name());
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Laptop laptop = mapResultSetToLaptop(rs);
+                    laptops.add(laptop);
+                }
+            }
+        } catch (SQLException e) {
+            handleSQLException("Fejl ved hentning af tilgængelige laptops med performance type " + performanceType, e);
+            throw e;
+        }
+        return laptops;
+    }
+
+    /**
      * Henter laptop baseret på UUID.
      *
      * @param id Laptop UUID
@@ -71,7 +101,7 @@ public class LaptopDAO implements GenericDAO<Laptop, UUID> {
      */
     @Override
     public Laptop getById(UUID id) throws SQLException {
-        String sql = "SELECT laptop_uuid, brand, model, gigabyte, ram, performance_type, state FROM Laptop WHERE laptop_uuid = ?";
+        String sql = "SELECT laptop_uuid, brand, model, gigabyte, ram, performance_type, state FROM Laptop WHERE laptop_uuid = CAST(? AS UUID)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -144,7 +174,7 @@ public class LaptopDAO implements GenericDAO<Laptop, UUID> {
     @Override
     public boolean update(Laptop laptop) throws SQLException {
         String sql = "UPDATE Laptop SET brand = ?, model = ?, gigabyte = ?, ram = ?, performance_type = ?, state = ? " +
-                "WHERE laptop_uuid = ?";
+                "WHERE laptop_uuid = CAST(? AS UUID)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -186,7 +216,7 @@ public class LaptopDAO implements GenericDAO<Laptop, UUID> {
      * @throws SQLException hvis der er problemer med databasen
      */
     public boolean updateState(Laptop laptop) throws SQLException {
-        String sql = "UPDATE Laptop SET state = ? WHERE laptop_uuid = ?";
+        String sql = "UPDATE Laptop SET state = ? WHERE laptop_uuid = CAST(? AS UUID)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -230,7 +260,7 @@ public class LaptopDAO implements GenericDAO<Laptop, UUID> {
             return false;
         }
 
-        String sql = "DELETE FROM Laptop WHERE laptop_uuid = ?";
+        String sql = "DELETE FROM Laptop WHERE laptop_uuid = CAST(? AS UUID)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -290,7 +320,7 @@ public class LaptopDAO implements GenericDAO<Laptop, UUID> {
      */
     @Override
     public boolean exists(UUID id) throws SQLException {
-        String sql = "SELECT 1 FROM Laptop WHERE laptop_uuid = ?";
+        String sql = "SELECT 1 FROM Laptop WHERE laptop_uuid = CAST(? AS UUID)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -329,6 +359,56 @@ public class LaptopDAO implements GenericDAO<Laptop, UUID> {
             }
         } catch (SQLException e) {
             handleSQLException("Fejl ved optælling af laptops med tilstand " + state, e);
+            throw e;
+        }
+    }
+
+    /**
+     * Henter alle tilgængelige laptops fra databasen.
+     *
+     * @return Liste af tilgængelige laptops
+     * @throws SQLException hvis der er problemer med databasen
+     */
+    public List<Laptop> getAvailableLaptops() throws SQLException {
+        String sql = "SELECT laptop_uuid, brand, model, gigabyte, ram, performance_type, state FROM Laptop WHERE state = 'AvailableState'";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            List<Laptop> availableLaptops = new ArrayList<>();
+            while (rs.next()) {
+                Laptop laptop = mapResultSetToLaptop(rs);
+                availableLaptops.add(laptop);
+            }
+            return availableLaptops;
+        } catch (SQLException e) {
+            handleSQLException("Fejl ved hentning af tilgængelige laptops", e);
+            throw e;
+        }
+    }
+
+    /**
+     * Henter alle udlånte laptops fra databasen.
+     *
+     * @return Liste af udlånte laptops
+     * @throws SQLException hvis der er problemer med databasen
+     */
+    public List<Laptop> getLoanedLaptops() throws SQLException {
+        String sql = "SELECT laptop_uuid, brand, model, gigabyte, ram, performance_type, state FROM Laptop WHERE state = 'LoanedState'";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            List<Laptop> loanedLaptops = new ArrayList<>();
+            while (rs.next()) {
+                Laptop laptop = mapResultSetToLaptop(rs);
+                loanedLaptops.add(laptop);
+            }
+            return loanedLaptops;
+        } catch (SQLException e) {
+            handleSQLException("Fejl ved hentning af udlånte laptops", e);
             throw e;
         }
     }

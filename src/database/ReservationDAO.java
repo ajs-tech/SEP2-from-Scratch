@@ -114,12 +114,12 @@ public class ReservationDAO implements GenericDAO<Reservation, UUID> {
     @Override
     public Reservation getById(UUID id) throws SQLException {
         String sql = "SELECT reservation_uuid, laptop_uuid, student_via_id, status, creation_date " +
-                "FROM Reservation WHERE reservation_uuid = ?";
+                "FROM Reservation WHERE reservation_uuid = CAST(? AS UUID)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setObject(1, id);
+            stmt.setString(1, id.toString());
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -143,13 +143,13 @@ public class ReservationDAO implements GenericDAO<Reservation, UUID> {
     @Override
     public boolean insert(Reservation reservation) throws SQLException {
         String sql = "INSERT INTO Reservation (reservation_uuid, laptop_uuid, student_via_id, status, creation_date) " +
-                "VALUES (?, ?, ?, ?, ?)";
+                "VALUES (CAST(? AS UUID), CAST(? AS UUID), ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setObject(1, reservation.getReservationId());
-            stmt.setObject(2, reservation.getLaptop().getId());
+            stmt.setString(1, reservation.getReservationId().toString());
+            stmt.setString(2, reservation.getLaptop().getId().toString());
             stmt.setInt(3, reservation.getStudent().getViaId());
             stmt.setString(4, reservation.getStatus().name());
             stmt.setTimestamp(5, new Timestamp(reservation.getCreationDate().getTime()));
@@ -191,10 +191,10 @@ public class ReservationDAO implements GenericDAO<Reservation, UUID> {
 
             // 1. Indsæt reservation
             String sql = "INSERT INTO Reservation (reservation_uuid, laptop_uuid, student_via_id, status, creation_date) " +
-                    "VALUES (?, ?, ?, ?, ?)";
+                    "VALUES (CAST(? AS UUID), CAST(? AS UUID), ?, ?, ?)";
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setObject(1, reservation.getReservationId());
-                stmt.setObject(2, reservation.getLaptop().getId());
+                stmt.setString(1, reservation.getReservationId().toString());
+                stmt.setString(2, reservation.getLaptop().getId().toString());
                 stmt.setInt(3, reservation.getStudent().getViaId());
                 stmt.setString(4, reservation.getStatus().name());
                 stmt.setTimestamp(5, new Timestamp(reservation.getCreationDate().getTime()));
@@ -202,9 +202,9 @@ public class ReservationDAO implements GenericDAO<Reservation, UUID> {
             }
 
             // 2. Opdater laptop tilstand til LoanedState
-            sql = "UPDATE Laptop SET state = 'LoanedState' WHERE laptop_uuid = ?";
+            sql = "UPDATE Laptop SET state = 'LoanedState' WHERE laptop_uuid = CAST(? AS UUID)";
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setObject(1, reservation.getLaptop().getId());
+                stmt.setString(1, reservation.getLaptop().getId().toString());
                 stmt.executeUpdate();
             }
 
@@ -253,13 +253,13 @@ public class ReservationDAO implements GenericDAO<Reservation, UUID> {
      */
     @Override
     public boolean update(Reservation reservation) throws SQLException {
-        String sql = "UPDATE Reservation SET status = ? WHERE reservation_uuid = ?";
+        String sql = "UPDATE Reservation SET status = ? WHERE reservation_uuid = CAST(? AS UUID)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, reservation.getStatus().name());
-            stmt.setObject(2, reservation.getReservationId());
+            stmt.setString(2, reservation.getReservationId().toString());
 
             int affectedRows = stmt.executeUpdate();
 
@@ -296,10 +296,10 @@ public class ReservationDAO implements GenericDAO<Reservation, UUID> {
             conn.setAutoCommit(false);
 
             // 1. Hent den nuværende status
-            String selectSql = "SELECT status FROM Reservation WHERE reservation_uuid = ?";
+            String selectSql = "SELECT status FROM Reservation WHERE reservation_uuid = CAST(? AS UUID)";
             ReservationStatusEnum currentStatus;
             try (PreparedStatement stmt = conn.prepareStatement(selectSql)) {
-                stmt.setObject(1, reservation.getReservationId());
+                stmt.setString(1, reservation.getReservationId().toString());
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (!rs.next()) {
                         return false; // Reservation findes ikke
@@ -309,10 +309,10 @@ public class ReservationDAO implements GenericDAO<Reservation, UUID> {
             }
 
             // 2. Opdater reservation status
-            String updateSql = "UPDATE Reservation SET status = ? WHERE reservation_uuid = ?";
+            String updateSql = "UPDATE Reservation SET status = ? WHERE reservation_uuid = CAST(? AS UUID)";
             try (PreparedStatement stmt = conn.prepareStatement(updateSql)) {
                 stmt.setString(1, reservation.getStatus().name());
-                stmt.setObject(2, reservation.getReservationId());
+                stmt.setString(2, reservation.getReservationId().toString());
                 stmt.executeUpdate();
             }
 
@@ -322,9 +322,9 @@ public class ReservationDAO implements GenericDAO<Reservation, UUID> {
                             reservation.getStatus() == ReservationStatusEnum.CANCELLED)) {
 
                 // Opdater laptop tilstand til Available
-                String laptopSql = "UPDATE Laptop SET state = 'AvailableState' WHERE laptop_uuid = ?";
+                String laptopSql = "UPDATE Laptop SET state = 'AvailableState' WHERE laptop_uuid = CAST(? AS UUID)";
                 try (PreparedStatement stmt = conn.prepareStatement(laptopSql)) {
-                    stmt.setObject(1, reservation.getLaptop().getId());
+                    stmt.setString(1, reservation.getLaptop().getId().toString());
                     stmt.executeUpdate();
                 }
             }
@@ -380,12 +380,12 @@ public class ReservationDAO implements GenericDAO<Reservation, UUID> {
             return false;
         }
 
-        String sql = "DELETE FROM Reservation WHERE reservation_uuid = ?";
+        String sql = "DELETE FROM Reservation WHERE reservation_uuid = CAST(? AS UUID)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setObject(1, id);
+            stmt.setString(1, id.toString());
 
             int affectedRows = stmt.executeUpdate();
 
@@ -466,12 +466,12 @@ public class ReservationDAO implements GenericDAO<Reservation, UUID> {
      */
     @Override
     public boolean exists(UUID id) throws SQLException {
-        String sql = "SELECT 1 FROM Reservation WHERE reservation_uuid = ?";
+        String sql = "SELECT 1 FROM Reservation WHERE reservation_uuid = CAST(? AS UUID)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setObject(1, id);
+            stmt.setString(1, id.toString());
 
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next();
@@ -524,12 +524,12 @@ public class ReservationDAO implements GenericDAO<Reservation, UUID> {
     public List<Reservation> getByLaptopId(UUID laptopId) throws SQLException {
         List<Reservation> reservations = new ArrayList<>();
         String sql = "SELECT reservation_uuid, laptop_uuid, student_via_id, status, creation_date " +
-                "FROM Reservation WHERE laptop_uuid = ?";
+                "FROM Reservation WHERE laptop_uuid = CAST(? AS UUID)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setObject(1, laptopId);
+            stmt.setString(1, laptopId.toString());
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -609,8 +609,8 @@ public class ReservationDAO implements GenericDAO<Reservation, UUID> {
      * @throws SQLException hvis der er problemer med databasen
      */
     private Reservation mapResultSetToReservation(ResultSet rs) throws SQLException {
-        UUID reservationId = (UUID) rs.getObject("reservation_uuid");
-        UUID laptopId = (UUID) rs.getObject("laptop_uuid");
+        UUID reservationId = UUID.fromString(rs.getString("reservation_uuid"));
+        UUID laptopId = UUID.fromString(rs.getString("laptop_uuid"));
         int studentId = rs.getInt("student_via_id");
         String statusStr = rs.getString("status");
         Timestamp creationTimestamp = rs.getTimestamp("creation_date");
