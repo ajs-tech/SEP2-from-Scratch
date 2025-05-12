@@ -26,7 +26,7 @@ public class ClientTest {
     private SocketServer server;
     private ServerModel serverModel;
     private SocketClient client;
-    private final int TEST_PORT = 8880; // Brug en anden port end standard og ServerTest
+    private final int TEST_PORT = 7832; // Brug en anden port end standard og ServerTest
     private final String TEST_HOST = "localhost";
 
     @Before

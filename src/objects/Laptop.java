@@ -5,19 +5,23 @@ import util.PropertyChangeSubjectInterface;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
 
-public class Laptop implements PropertyChangeSubjectInterface {
+public class Laptop implements PropertyChangeSubjectInterface, Serializable {
+    // Add serialVersionUID for version control of serialization
+    private static final long serialVersionUID = 1L;
+
     private UUID id;
     private String brand;
     private String model;
     private int gigabyte;
     private int ram;
     private PerformanceTypeEnum performanceType;
-    private LaptopState state;
-    private PropertyChangeSupport support;
+    private transient LaptopState state; // Mark as transient since LaptopState might not be serializable
+    private transient PropertyChangeSupport support; // PropertyChangeSupport is not serializable
 
     public static final String EVENT_BRAND_CHANGED = "laptop_brand_changed";
     public static final String EVENT_MODEL_CHANGED = "laptop_model_changed";
@@ -27,6 +31,8 @@ public class Laptop implements PropertyChangeSubjectInterface {
     public static final String EVENT_STATE_CHANGED = "laptop_state_changed";
     public static final String EVENT_AVAILABILITY_CHANGED = "laptop_availability_changed";
 
+    // Store state name for serialization
+    private String stateName;
 
     public Laptop(String brand, String model, int gigabyte, int ram, PerformanceTypeEnum performanceType) {
         this(UUID.randomUUID(), brand, model, gigabyte, ram, performanceType);
@@ -42,7 +48,8 @@ public class Laptop implements PropertyChangeSubjectInterface {
         this.ram = ram;
         this.performanceType = performanceType;
         this.state = new AvailableState();
-        this.support = new PropertyChangeSupport(this); // Initialiserer support i konstruktøren
+        this.stateName = "AvailableState";
+        this.support = new PropertyChangeSupport(this); // Initialize support in constructor
     }
 
     /**
@@ -98,6 +105,10 @@ public class Laptop implements PropertyChangeSubjectInterface {
     }
 
     public LaptopState getState() {
+        // Ensure state is initialized after deserialization
+        if (state == null) {
+            initializeStateFromName();
+        }
         return state;
     }
 
@@ -163,21 +174,26 @@ public class Laptop implements PropertyChangeSubjectInterface {
         }
     }
 
-
     public String getStateClassSimpleName() {
+        if (state == null) {
+            initializeStateFromName();
+        }
         return state.getClass().getSimpleName();
     }
 
-
     public boolean isAvailable() {
+        if (state == null) {
+            initializeStateFromName();
+        }
         return state instanceof AvailableState;
     }
 
-
     public boolean isLoaned() {
+        if (state == null) {
+            initializeStateFromName();
+        }
         return state instanceof LoanedState;
     }
-
 
     public void changeState(LaptopState newState) {
         if (newState == null) {
@@ -189,11 +205,12 @@ public class Laptop implements PropertyChangeSubjectInterface {
         boolean wasAvailable = this.isAvailable();
 
         this.state = newState;
+        this.stateName = newState.getClass().getSimpleName();
 
         String newStateName = newState.getSimpleName();
         boolean isNowAvailable = this.isAvailable();
 
-        // Sikre at support ikke er null før vi prøver at bruge den
+        // Ensure support is not null before using it
         if (support != null) {
             support.firePropertyChange(EVENT_STATE_CHANGED, oldStateName, newStateName);
 
@@ -204,8 +221,9 @@ public class Laptop implements PropertyChangeSubjectInterface {
         }
     }
 
-
     public void setStateFromDatabase(String stateName) {
+        this.stateName = stateName;
+
         if ("LoanedState".equals(stateName)) {
             if (!(state instanceof LoanedState)) {
                 changeState(new LoanedState());
@@ -218,7 +236,27 @@ public class Laptop implements PropertyChangeSubjectInterface {
     }
 
     public void setState(){
+        if (state == null) {
+            initializeStateFromName();
+        }
         state.click(this);
+    }
+
+    // Helper method to initialize state after deserialization
+    private void initializeStateFromName() {
+        if ("LoanedState".equals(stateName)) {
+            this.state = new LoanedState();
+        } else {
+            this.state = new AvailableState();
+        }
+    }
+
+    // This method is called during deserialization
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        // Initialize transient fields
+        this.support = new PropertyChangeSupport(this);
+        initializeStateFromName();
     }
 
     @Override
@@ -239,8 +277,7 @@ public class Laptop implements PropertyChangeSubjectInterface {
         return Objects.hash(id);
     }
 
-
-    // Observer add / remove listener metoder
+    // Observer add / remove listener methods
 
     @Override
     public void addListener(PropertyChangeListener listener) {
