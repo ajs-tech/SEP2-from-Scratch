@@ -1,5 +1,6 @@
 package model.helpToLogic;
 
+import enums.PerformanceTypeEnum;
 import enums.ReservationStatusEnum;
 import objects.Laptop;
 import objects.Reservation;
@@ -21,6 +22,13 @@ public class ReservationData implements PropertyChangeSubjectInterface, Property
     private PropertyChangeSupport support;
 
     public static String EVENT_STATUSCHANGEDCOMPLETED = "EVENT_STATUSCHANGEDCOMPLETED";
+
+    public static final String EVENT_RESERVATION_ADDED = "resdata_added";
+    public static final String EVENT_RESERVATION_REMOVED = "resdata_removed";
+    public static final String EVENT_RESERVATION_UPDATED = "resdata_updated";
+    public static final String EVENT_RESERVATION_COMPLETED = "resdata_completed";
+    public static final String EVENT_RESERVATION_CANCELLED = "resdata_cancelled";
+    public static final String EVENT_ACTIVE_COUNT_CHANGED = "resdata_active_count_changed";
 
 
     public ReservationData(){
@@ -62,18 +70,41 @@ public class ReservationData implements PropertyChangeSubjectInterface, Property
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
+        String propertyName = evt.getPropertyName();
 
-        if (Reservation.EVENT_CHANGEDSTATUS.equals(evt.getPropertyName())){
+        if (evt.getSource() instanceof Reservation) {
             Reservation reservation = (Reservation) evt.getSource();
-            if (evt.getNewValue() != ReservationStatusEnum.ACTIVE){
-                activeReservations.remove(reservation);
-                support.firePropertyChange(EVENT_STATUSCHANGEDCOMPLETED, false, true);
+
+            // Handle reservation status changes
+            if (Reservation.EVENT_STATUS_CHANGED.equals(propertyName)) {
+                // Update internal structures
+                if (reservation.getStatus() == ReservationStatusEnum.ACTIVE) {
+                    if (!activeReservations.contains(reservation)) {
+                        activeReservations.add(reservation);
+                        support.firePropertyChange(EVENT_RESERVATION_ADDED, null, reservation);
+                        support.firePropertyChange(EVENT_ACTIVE_COUNT_CHANGED,
+                                activeReservations.size() - 1,
+                                activeReservations.size());
+                    }
+                }
+                else {
+                    // Reservation completed or cancelled
+                    if (activeReservations.remove(reservation)) {
+                        support.firePropertyChange(EVENT_RESERVATION_REMOVED, reservation, null);
+                        support.firePropertyChange(EVENT_ACTIVE_COUNT_CHANGED,
+                                activeReservations.size() + 1,
+                                activeReservations.size());
+
+                        // Notify of specific completion type
+                        if (reservation.getStatus() == ReservationStatusEnum.COMPLETED) {
+                            support.firePropertyChange(EVENT_RESERVATION_COMPLETED, null, reservation);
+                        } else if (reservation.getStatus() == ReservationStatusEnum.CANCELLED) {
+                            support.firePropertyChange(EVENT_RESERVATION_CANCELLED, null, reservation);
+                        }
+                    }
+                }
             }
         }
-
-
-
-
     }
 
 

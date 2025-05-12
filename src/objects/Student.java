@@ -22,6 +22,14 @@ public class Student implements PropertyChangeSubjectInterface {
     private PerformanceTypeEnum performanceNeeded;
     private PropertyChangeSupport support;
 
+    public static final String EVENT_NAME_CHANGED = "student_name_changed";
+    public static final String EVENT_EMAIL_CHANGED = "student_email_changed";
+    public static final String EVENT_PHONE_CHANGED = "student_phone_changed";
+    public static final String EVENT_DEGREEENDDATE_CHANGED = "student_degreeenddate_changed";
+    public static final String EVENT_DEGREE_CHANGED = "student_degree_changed";
+    public static final String EVENT_PERFORMANCE_CHANGED = "student_performance_changed";
+
+
 
     public Student(String name, Date degreeEndDate, String degreeTitle, int viaId,
                    String email, int phoneNumber, PerformanceTypeEnum performanceNeeded) {
@@ -128,7 +136,7 @@ public class Student implements PropertyChangeSubjectInterface {
 
         String oldValue = this.name;
         this.name = name;
-        support.firePropertyChange("name", oldValue, name);
+        support.firePropertyChange(EVENT_NAME_CHANGED, oldValue, name);
     }
 
     public void setDegreeEndDate(Date degreeEndDate) {
@@ -138,7 +146,7 @@ public class Student implements PropertyChangeSubjectInterface {
 
         Date oldValue = this.degreeEndDate;
         this.degreeEndDate = degreeEndDate;
-        support.firePropertyChange("degreeEndDate", oldValue, degreeEndDate);
+        support.firePropertyChange(EVENT_DEGREEENDDATE_CHANGED, oldValue, degreeEndDate);
     }
 
     public void setDegreeTitle(String degreeTitle) {
@@ -148,7 +156,7 @@ public class Student implements PropertyChangeSubjectInterface {
 
         String oldValue = this.degreeTitle;
         this.degreeTitle = degreeTitle;
-        support.firePropertyChange("degreeTitle", oldValue, degreeTitle);
+        support.firePropertyChange(EVENT_DEGREE_CHANGED, oldValue, degreeTitle);
     }
 
     public void setEmail(String email) {
@@ -158,7 +166,7 @@ public class Student implements PropertyChangeSubjectInterface {
 
         String oldValue = this.email;
         this.email = email;
-        support.firePropertyChange("email", oldValue, email);
+        support.firePropertyChange(EVENT_EMAIL_CHANGED, oldValue, email);
     }
 
     public void setPhoneNumber(int phoneNumber) {
@@ -168,7 +176,7 @@ public class Student implements PropertyChangeSubjectInterface {
 
         int oldValue = this.phoneNumber;
         this.phoneNumber = phoneNumber;
-        support.firePropertyChange("phoneNumber", oldValue, phoneNumber);
+        support.firePropertyChange(EVENT_PHONE_CHANGED, oldValue, phoneNumber);
     }
 
     public void setPerformanceNeeded(PerformanceTypeEnum performanceNeeded) {
@@ -178,7 +186,7 @@ public class Student implements PropertyChangeSubjectInterface {
 
         PerformanceTypeEnum oldValue = this.performanceNeeded;
         this.performanceNeeded = performanceNeeded;
-        support.firePropertyChange("performanceNeeded", oldValue, performanceNeeded);
+        support.firePropertyChange(EVENT_PERFORMANCE_CHANGED, oldValue, performanceNeeded);
     }
 
 
