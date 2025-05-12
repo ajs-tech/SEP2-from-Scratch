@@ -128,6 +128,20 @@ public class ServerModelImpl implements ServerModel {
             support.firePropertyChange(EVENT_RESERVATION_UPDATED, null, msg);
         });
 
+        reservationDAO.addListener(ReservationDAO.RESERVATION_STATUS_CHANGED, evt -> {
+            Message msg = (Message) evt.getNewValue();
+            Object[] args = (Object[]) msg.getArgs();
+            Reservation reservation = (Reservation) args[0];
+            ReservationStatusEnum oldStatus = (ReservationStatusEnum) args[1];
+            ReservationStatusEnum newStatus = (ReservationStatusEnum) args[2];
+
+            if (newStatus == ReservationStatusEnum.COMPLETED) {
+                support.firePropertyChange(EVENT_RESERVATION_COMPLETED, null, reservation);
+            } else if (newStatus == ReservationStatusEnum.CANCELLED) {
+                support.firePropertyChange(EVENT_RESERVATION_CANCELLED, null, reservation);
+            }
+        });
+
         // QueueDAO listeners
         queueDAO.addListener(QueueDAO.QUEUE_UPDATED, evt -> {
             Message msg = (Message) evt.getNewValue();
@@ -193,23 +207,23 @@ public class ServerModelImpl implements ServerModel {
     /**
      * Adds a listener for specific property changes.
      *
-     * @param eventName The event name to listen for
+     * @param propertyName The event name to listen for
      * @param listener The listener to add
      */
     @Override
-    public void addListener(String eventName, PropertyChangeListener listener) {
-        support.addPropertyChangeListener(eventName, listener);
+    public void addListener(String propertyName, PropertyChangeListener listener) {
+        support.addPropertyChangeListener(propertyName, listener);
     }
 
     /**
      * Removes a listener for specific property changes.
      *
-     * @param eventName The event name to stop listening for
+     * @param propertyName The event name to stop listening for
      * @param listener The listener to remove
      */
     @Override
-    public void removeListener(String eventName, PropertyChangeListener listener) {
-        support.removePropertyChangeListener(eventName, listener);
+    public void removeListener(String propertyName, PropertyChangeListener listener) {
+        support.removePropertyChangeListener(propertyName, listener);
     }
 
     // ========== Laptop Methods ==========
@@ -237,7 +251,16 @@ public class ServerModelImpl implements ServerModel {
     @Override
     public List<Laptop> getAvailableLaptops() {
         try {
-            return laptopDAO.getAvailableLaptops();
+            List<Laptop> allLaptops = laptopDAO.getAll();
+            List<Laptop> availableLaptops = new ArrayList<>();
+
+            for (Laptop laptop : allLaptops) {
+                if (laptop.isAvailable()) {
+                    availableLaptops.add(laptop);
+                }
+            }
+
+            return availableLaptops;
         } catch (SQLException e) {
             handleError("Error getting available laptops", e);
             return new ArrayList<>();
@@ -252,7 +275,16 @@ public class ServerModelImpl implements ServerModel {
     @Override
     public List<Laptop> getLoanedLaptops() {
         try {
-            return laptopDAO.getLoanedLaptops();
+            List<Laptop> allLaptops = laptopDAO.getAll();
+            List<Laptop> loanedLaptops = new ArrayList<>();
+
+            for (Laptop laptop : allLaptops) {
+                if (laptop.isLoaned()) {
+                    loanedLaptops.add(laptop);
+                }
+            }
+
+            return loanedLaptops;
         } catch (SQLException e) {
             handleError("Error getting loaned laptops", e);
             return new ArrayList<>();
@@ -266,12 +298,16 @@ public class ServerModelImpl implements ServerModel {
      * @return The next available laptop or null if none found
      */
     @Override
-    public Laptop getNextAvailableLaptop(PerformanceTypeEnum performanceTypeEnum) {
+    public Laptop seeNextAvailableLaptop(PerformanceTypeEnum performanceTypeEnum) {
         try {
-            List<Laptop> availableLaptops = laptopDAO.getAvailableLaptopsByPerformance(performanceTypeEnum);
-            if (!availableLaptops.isEmpty()) {
-                return availableLaptops.get(0);
+            List<Laptop> allLaptops = laptopDAO.getAll();
+
+            for (Laptop laptop : allLaptops) {
+                if (laptop.isAvailable() && laptop.getPerformanceType() == performanceTypeEnum) {
+                    return laptop;
+                }
             }
+
             return null;
         } catch (SQLException e) {
             handleError("Error getting next available laptop", e);
@@ -328,7 +364,7 @@ public class ServerModelImpl implements ServerModel {
         try {
             Laptop laptop = laptopDAO.getById(id);
             if (laptop != null) {
-                laptop.setState();
+                laptop.setState(); // This triggers the state change
                 boolean success = laptopDAO.updateState(laptop);
                 return success ? laptop : null;
             }
@@ -494,22 +530,6 @@ public class ServerModelImpl implements ServerModel {
     }
 
     /**
-     * Updates an existing student.
-     *
-     * @param student The student to update
-     * @return True if update succeeded, false otherwise
-     */
-    @Override
-    public boolean updateStudent(Student student) {
-        try {
-            return studentDAO.update(student);
-        } catch (SQLException e) {
-            handleError("Error updating student: " + student.getViaId(), e);
-            return false;
-        }
-    }
-
-    /**
      * Deletes a student by their VIA ID.
      *
      * @param viaId The student's VIA ID
@@ -526,68 +546,6 @@ public class ServerModelImpl implements ServerModel {
     }
 
     // ========== Reservation Methods ==========
-
-    /**
-     * Gets all reservations from the database.
-     *
-     * @return List of all reservations
-     */
-    @Override
-    public List<Reservation> getAllReservations() {
-        try {
-            return reservationDAO.getAll();
-        } catch (SQLException e) {
-            handleError("Error getting all reservations", e);
-            return new ArrayList<>();
-        }
-    }
-
-    /**
-     * Gets all active reservations.
-     *
-     * @return List of active reservations
-     */
-    @Override
-    public List<Reservation> getActiveReservations() {
-        try {
-            return reservationDAO.getAllActive();
-        } catch (SQLException e) {
-            handleError("Error getting active reservations", e);
-            return new ArrayList<>();
-        }
-    }
-
-    /**
-     * Gets all reservations for a specific student.
-     *
-     * @param studentId The student's VIA ID
-     * @return List of reservations for the student
-     */
-    @Override
-    public List<Reservation> getReservationsByStudent(int studentId) {
-        try {
-            return reservationDAO.getByStudentId(studentId);
-        } catch (SQLException e) {
-            handleError("Error getting reservations for student: " + studentId, e);
-            return new ArrayList<>();
-        }
-    }
-
-    /**
-     * Gets all reservations for a specific laptop.
-     *
-     * @param laptopId The laptop's UUID
-     * @return List of reservations for the laptop
-     */
-    @Override
-    public List<Reservation> getReservationsByLaptop(UUID laptopId) {
-        try {
-            return reservationDAO.getByLaptopId(laptopId);
-        } catch (SQLException e) {
-            handleError("Error getting reservations for laptop: " + laptopId, e);
-            return new ArrayList<>();
-        }
-    }
 
     /**
      * Creates a new reservation.
@@ -609,13 +567,101 @@ public class ServerModelImpl implements ServerModel {
     }
 
     /**
+     * Gets all students who have a laptop.
+     *
+     * @return List of students with active reservations
+     */
+    @Override
+    public ArrayList<Student> getThoseWhoHaveLaptop() {
+        try {
+            List<Student> studentsWithLaptops = reservationDAO.getStudentsWithActiveLaptop();
+            return new ArrayList<>(studentsWithLaptops);
+        } catch (SQLException e) {
+            handleError("Error getting students with laptops", e);
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Gets the count of students who have a laptop.
+     *
+     * @return Count of students with active reservations
+     */
+    @Override
+    public int getCountOfWhoHasLaptop() {
+        try {
+            return reservationDAO.countActive();
+        } catch (SQLException e) {
+            handleError("Error getting count of students with laptops", e);
+            return 0;
+        }
+    }
+
+    /**
+     * Gets all reservations from the database.
+     *
+     * @return List of all reservations
+     */
+    public List<Reservation> getAllReservations() {
+        try {
+            return reservationDAO.getAll();
+        } catch (SQLException e) {
+            handleError("Error getting all reservations", e);
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Gets all active reservations.
+     *
+     * @return List of active reservations
+     */
+    public List<Reservation> getActiveReservations() {
+        try {
+            return reservationDAO.getAllActive();
+        } catch (SQLException e) {
+            handleError("Error getting active reservations", e);
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Gets all reservations for a specific student.
+     *
+     * @param studentId The student's VIA ID
+     * @return List of reservations for the student
+     */
+    public List<Reservation> getReservationsByStudent(int studentId) {
+        try {
+            return reservationDAO.getByStudentId(studentId);
+        } catch (SQLException e) {
+            handleError("Error getting reservations for student: " + studentId, e);
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Gets all reservations for a specific laptop.
+     *
+     * @param laptopId The laptop's UUID
+     * @return List of reservations for the laptop
+     */
+    public List<Reservation> getReservationsByLaptop(UUID laptopId) {
+        try {
+            return reservationDAO.getByLaptopId(laptopId);
+        } catch (SQLException e) {
+            handleError("Error getting reservations for laptop: " + laptopId, e);
+            return new ArrayList<>();
+        }
+    }
+
+    /**
      * Updates a reservation's status.
      *
      * @param reservationId The reservation UUID
      * @param newStatus The new status
      * @return True if update succeeded, false otherwise
      */
-    @Override
     public boolean updateReservationStatus(UUID reservationId, ReservationStatusEnum newStatus) {
         try {
             Reservation reservation = reservationDAO.getById(reservationId);
@@ -636,7 +682,6 @@ public class ServerModelImpl implements ServerModel {
      * @param reservationId The reservation UUID
      * @return True if completion succeeded, false otherwise
      */
-    @Override
     public boolean completeReservation(UUID reservationId) {
         return updateReservationStatus(reservationId, ReservationStatusEnum.COMPLETED);
     }
@@ -647,7 +692,6 @@ public class ServerModelImpl implements ServerModel {
      * @param reservationId The reservation UUID
      * @return True if cancellation succeeded, false otherwise
      */
-    @Override
     public boolean cancelReservation(UUID reservationId) {
         return updateReservationStatus(reservationId, ReservationStatusEnum.CANCELLED);
     }
@@ -659,7 +703,6 @@ public class ServerModelImpl implements ServerModel {
      *
      * @return List of students in the high performance queue
      */
-    @Override
     public List<Student> getHighPerformanceQueue() {
         try {
             return queueDAO.getQueueByPerformanceType(PerformanceTypeEnum.HIGH);
@@ -674,7 +717,6 @@ public class ServerModelImpl implements ServerModel {
      *
      * @return List of students in the low performance queue
      */
-    @Override
     public List<Student> getLowPerformanceQueue() {
         try {
             return queueDAO.getQueueByPerformanceType(PerformanceTypeEnum.LOW);
@@ -689,7 +731,6 @@ public class ServerModelImpl implements ServerModel {
      *
      * @return Size of the high performance queue
      */
-    @Override
     public int getHighPerformanceQueueSize() {
         try {
             return queueDAO.getQueueSize(PerformanceTypeEnum.HIGH);
@@ -704,7 +745,6 @@ public class ServerModelImpl implements ServerModel {
      *
      * @return Size of the low performance queue
      */
-    @Override
     public int getLowPerformanceQueueSize() {
         try {
             return queueDAO.getQueueSize(PerformanceTypeEnum.LOW);
@@ -720,7 +760,6 @@ public class ServerModelImpl implements ServerModel {
      * @param studentId The student's VIA ID
      * @return True if addition succeeded, false otherwise
      */
-    @Override
     public boolean addToHighPerformanceQueue(int studentId) {
         try {
             return queueDAO.addToQueue(studentId, PerformanceTypeEnum.HIGH);
@@ -736,7 +775,6 @@ public class ServerModelImpl implements ServerModel {
      * @param studentId The student's VIA ID
      * @return True if addition succeeded, false otherwise
      */
-    @Override
     public boolean addToLowPerformanceQueue(int studentId) {
         try {
             return queueDAO.addToQueue(studentId, PerformanceTypeEnum.LOW);
@@ -752,7 +790,6 @@ public class ServerModelImpl implements ServerModel {
      * @param studentId The student's VIA ID
      * @return True if removal succeeded, false otherwise
      */
-    @Override
     public boolean removeFromHighPerformanceQueue(int studentId) {
         try {
             return queueDAO.removeFromQueue(studentId, PerformanceTypeEnum.HIGH);
@@ -768,7 +805,6 @@ public class ServerModelImpl implements ServerModel {
      * @param studentId The student's VIA ID
      * @return True if removal succeeded, false otherwise
      */
-    @Override
     public boolean removeFromLowPerformanceQueue(int studentId) {
         try {
             return queueDAO.removeFromQueue(studentId, PerformanceTypeEnum.LOW);
@@ -784,15 +820,8 @@ public class ServerModelImpl implements ServerModel {
      * @param performanceType The performance type to check
      * @return True if a laptop is available, false otherwise
      */
-    @Override
     public boolean canAssignLaptop(PerformanceTypeEnum performanceType) {
-        try {
-            List<Laptop> availableLaptops = laptopDAO.getAvailableLaptopsByPerformance(performanceType);
-            return !availableLaptops.isEmpty();
-        } catch (SQLException e) {
-            handleError("Error checking if laptop can be assigned", e);
-            return false;
-        }
+        return seeNextAvailableLaptop(performanceType) != null;
     }
 
     /**
@@ -800,50 +829,46 @@ public class ServerModelImpl implements ServerModel {
      *
      * @return The number of laptops that were assigned
      */
-    @Override
     public int processQueues() {
         int assigned = 0;
 
         try {
             // First process high performance queue
-            List<Student> highQueue = queueDAO.getQueueByPerformanceType(PerformanceTypeEnum.HIGH);
-            List<Laptop> highLaptops = laptopDAO.getAvailableLaptopsByPerformance(PerformanceTypeEnum.HIGH);
+            List<Student> highQueue = getHighPerformanceQueue();
 
             for (Student student : highQueue) {
-                if (highLaptops.isEmpty()) {
-                    break;
+                Laptop laptop = seeNextAvailableLaptop(PerformanceTypeEnum.HIGH);
+                if (laptop == null) {
+                    break; // No more high performance laptops available
                 }
 
-                Laptop laptop = highLaptops.remove(0);
                 Reservation reservation = createReservation(student, laptop);
-
                 if (reservation != null) {
-                    queueDAO.removeFromQueue(student.getViaId(), PerformanceTypeEnum.HIGH);
+                    removeFromHighPerformanceQueue(student.getViaId());
                     assigned++;
                 }
             }
 
             // Then process low performance queue
-            List<Student> lowQueue = queueDAO.getQueueByPerformanceType(PerformanceTypeEnum.LOW);
-            List<Laptop> lowLaptops = laptopDAO.getAvailableLaptopsByPerformance(PerformanceTypeEnum.LOW);
+            List<Student> lowQueue = getLowPerformanceQueue();
 
             for (Student student : lowQueue) {
-                if (lowLaptops.isEmpty()) {
-                    break;
+                Laptop laptop = seeNextAvailableLaptop(PerformanceTypeEnum.LOW);
+                if (laptop == null) {
+                    break; // No more low performance laptops available
                 }
 
-                Laptop laptop = lowLaptops.remove(0);
                 Reservation reservation = createReservation(student, laptop);
-
                 if (reservation != null) {
-                    queueDAO.removeFromQueue(student.getViaId(), PerformanceTypeEnum.LOW);
+                    removeFromLowPerformanceQueue(student.getViaId());
                     assigned++;
                 }
             }
-        } catch (SQLException e) {
-            handleError("Error processing queues", e);
-        }
 
-        return assigned;
+            return assigned;
+        } catch (Exception e) {
+            handleError("Error processing queues", e);
+            return assigned; // Return how many were successfully assigned before the error
+        }
     }
 }

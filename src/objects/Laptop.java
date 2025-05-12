@@ -1,7 +1,6 @@
 package objects;
 
 import enums.PerformanceTypeEnum;
-import model.helpToLogic.LaptopData;
 import util.PropertyChangeSubjectInterface;
 
 import java.beans.PropertyChangeListener;
@@ -31,12 +30,11 @@ public class Laptop implements PropertyChangeSubjectInterface {
 
     public Laptop(String brand, String model, int gigabyte, int ram, PerformanceTypeEnum performanceType) {
         this(UUID.randomUUID(), brand, model, gigabyte, ram, performanceType);
-        support = new PropertyChangeSupport(this);
     }
 
     public Laptop(UUID id, String brand, String model, int gigabyte, int ram, PerformanceTypeEnum performanceType) {
         validateInput(brand, model, gigabyte, ram, performanceType);
-        
+
         this.id = id;
         this.brand = brand;
         this.model = model;
@@ -44,8 +42,9 @@ public class Laptop implements PropertyChangeSubjectInterface {
         this.ram = ram;
         this.performanceType = performanceType;
         this.state = new AvailableState();
+        this.support = new PropertyChangeSupport(this); // Initialiserer support i konstruktøren
     }
-    
+
     /**
      * Validates all input parameters.
      * Throws exception with clear message about which validation failed.
@@ -54,19 +53,19 @@ public class Laptop implements PropertyChangeSubjectInterface {
         if (brand == null || brand.trim().isEmpty()) {
             throw new IllegalArgumentException("Brand cannot be empty");
         }
-        
+
         if (model == null || model.trim().isEmpty()) {
             throw new IllegalArgumentException("Model cannot be empty");
         }
-        
+
         if (gigabyte <= 0 || gigabyte > 4000) {
             throw new IllegalArgumentException("Hard disk capacity must be between 1 and 4000 GB");
         }
-        
+
         if (ram <= 0 || ram > 128) {
             throw new IllegalArgumentException("RAM must be between 1 and 128 GB");
         }
-        
+
         if (performanceType == null) {
             throw new IllegalArgumentException("Performance type cannot be null");
         }
@@ -108,45 +107,60 @@ public class Laptop implements PropertyChangeSubjectInterface {
         if (brand == null || brand.trim().isEmpty()) {
             throw new IllegalArgumentException("Brand cannot be empty");
         }
-        
+
         String oldValue = this.brand;
         this.brand = brand;
+        if (support != null) {
+            support.firePropertyChange(EVENT_BRAND_CHANGED, oldValue, brand);
+        }
     }
 
     public void setModel(String model) {
         if (model == null || model.trim().isEmpty()) {
             throw new IllegalArgumentException("Model cannot be empty");
         }
-        
+
         String oldValue = this.model;
         this.model = model;
+        if (support != null) {
+            support.firePropertyChange(EVENT_MODEL_CHANGED, oldValue, model);
+        }
     }
 
     public void setGigabyte(int gigabyte) {
         if (gigabyte <= 0 || gigabyte > 4000) {
             throw new IllegalArgumentException("Hard disk capacity must be between 1 and 4000 GB");
         }
-        
+
         int oldValue = this.gigabyte;
         this.gigabyte = gigabyte;
+        if (support != null) {
+            support.firePropertyChange(EVENT_DISK_CHANGED, oldValue, gigabyte);
+        }
     }
 
     public void setRam(int ram) {
         if (ram <= 0 || ram > 128) {
             throw new IllegalArgumentException("RAM must be between 1 and 128 GB");
         }
-        
+
         int oldValue = this.ram;
         this.ram = ram;
+        if (support != null) {
+            support.firePropertyChange(EVENT_RAM_CHANGED, oldValue, ram);
+        }
     }
 
     public void setPerformanceType(PerformanceTypeEnum performanceType) {
         if (performanceType == null) {
             throw new IllegalArgumentException("Performance type cannot be null");
         }
-        
+
         PerformanceTypeEnum oldValue = this.performanceType;
         this.performanceType = performanceType;
+        if (support != null) {
+            support.firePropertyChange(EVENT_PERFORMANCE_CHANGED, oldValue, performanceType);
+        }
     }
 
 
@@ -166,6 +180,10 @@ public class Laptop implements PropertyChangeSubjectInterface {
 
 
     public void changeState(LaptopState newState) {
+        if (newState == null) {
+            throw new IllegalArgumentException("New state cannot be null");
+        }
+
         LaptopState oldState = this.state;
         String oldStateName = oldState.getSimpleName();
         boolean wasAvailable = this.isAvailable();
@@ -175,11 +193,14 @@ public class Laptop implements PropertyChangeSubjectInterface {
         String newStateName = newState.getSimpleName();
         boolean isNowAvailable = this.isAvailable();
 
-        support.firePropertyChange(EVENT_STATE_CHANGED, oldStateName, newStateName);
+        // Sikre at support ikke er null før vi prøver at bruge den
+        if (support != null) {
+            support.firePropertyChange(EVENT_STATE_CHANGED, oldStateName, newStateName);
 
-        // Only fire availability event if it actually changed
-        if (wasAvailable != isNowAvailable) {
-            support.firePropertyChange(EVENT_AVAILABILITY_CHANGED, wasAvailable, isNowAvailable);
+            // Only fire availability event if it actually changed
+            if (wasAvailable != isNowAvailable) {
+                support.firePropertyChange(EVENT_AVAILABILITY_CHANGED, wasAvailable, isNowAvailable);
+            }
         }
     }
 
@@ -223,21 +244,31 @@ public class Laptop implements PropertyChangeSubjectInterface {
 
     @Override
     public void addListener(PropertyChangeListener listener) {
+        if (support == null) {
+            support = new PropertyChangeSupport(this);
+        }
         support.addPropertyChangeListener(listener);
     }
 
     @Override
     public void removeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
+        if (support != null) {
+            support.removePropertyChangeListener(listener);
+        }
     }
 
     @Override
     public void addListener(String propertyName, PropertyChangeListener listener) {
+        if (support == null) {
+            support = new PropertyChangeSupport(this);
+        }
         support.addPropertyChangeListener(propertyName, listener);
     }
 
     @Override
     public void removeListener(String propertyName, PropertyChangeListener listener) {
-        support.removePropertyChangeListener(propertyName, listener);
+        if (support != null) {
+            support.removePropertyChangeListener(propertyName, listener);
+        }
     }
 }
