@@ -519,13 +519,52 @@ public class ServerModelImpl implements ServerModel {
     public Student createStudent(String name, Date degreeEndDate, String degreeTitle,
                                  int viaId, String email, int phoneNumber, PerformanceTypeEnum performanceNeeded) {
         try {
+            // Create the student first
             Student student = new Student(name, degreeEndDate, degreeTitle, viaId,
                     email, phoneNumber, performanceNeeded);
             boolean success = studentDAO.insert(student);
-            return success ? student : null;
+
+            if (!success) {
+                return null;
+            }
+
+            // NOW AUTOMATICALLY TRY TO ASSIGN A LAPTOP!
+            Laptop availableLaptop = seeNextAvailableLaptop(performanceNeeded);
+
+            if (availableLaptop != null) {
+                // Create reservation automatically
+                Reservation reservation = createReservation(student, availableLaptop);
+
+                if (reservation != null) {
+                    logger.info("Automatically assigned laptop " + availableLaptop.getId() +
+                            " to student " + student.getViaId());
+                } else {
+                    // Failed to create reservation, add to queue
+                    addStudentToQueue(student, performanceNeeded);
+                }
+            } else {
+                // No laptop available, add to queue
+                addStudentToQueue(student, performanceNeeded);
+            }
+
+            return student;
         } catch (SQLException e) {
             handleError("Error creating student", e);
             return null;
+        }
+    }
+
+    private void addStudentToQueue(Student student, PerformanceTypeEnum performanceNeeded) {
+        try {
+            if (performanceNeeded == PerformanceTypeEnum.HIGH) {
+                addToHighPerformanceQueue(student.getViaId());
+                logger.info("Added student " + student.getViaId() + " to high performance queue");
+            } else {
+                addToLowPerformanceQueue(student.getViaId());
+                logger.info("Added student " + student.getViaId() + " to low performance queue");
+            }
+        } catch (Exception e) {
+            logger.warning("Failed to add student to queue: " + e.getMessage());
         }
     }
 
@@ -754,31 +793,29 @@ public class ServerModelImpl implements ServerModel {
         }
     }
 
-    /**
-     * Adds a student to the high performance queue.
-     *
-     * @param studentId The student's VIA ID
-     * @return True if addition succeeded, false otherwise
-     */
     public boolean addToHighPerformanceQueue(int studentId) {
         try {
-            return queueDAO.addToQueue(studentId, PerformanceTypeEnum.HIGH);
+            System.out.println("Adding student " + studentId + " to high performance queue");
+            boolean result = queueDAO.addToQueue(studentId, PerformanceTypeEnum.HIGH);
+            System.out.println("Result: " + result);
+            return result;
         } catch (SQLException e) {
+            System.err.println("Error adding student to high performance queue: " + e.getMessage());
+            e.printStackTrace();
             handleError("Error adding student to high performance queue: " + studentId, e);
             return false;
         }
     }
 
-    /**
-     * Adds a student to the low performance queue.
-     *
-     * @param studentId The student's VIA ID
-     * @return True if addition succeeded, false otherwise
-     */
     public boolean addToLowPerformanceQueue(int studentId) {
         try {
-            return queueDAO.addToQueue(studentId, PerformanceTypeEnum.LOW);
+            System.out.println("Adding student " + studentId + " to low performance queue");
+            boolean result = queueDAO.addToQueue(studentId, PerformanceTypeEnum.LOW);
+            System.out.println("Result: " + result);
+            return result;
         } catch (SQLException e) {
+            System.err.println("Error adding student to low performance queue: " + e.getMessage());
+            e.printStackTrace();
             handleError("Error adding student to low performance queue: " + studentId, e);
             return false;
         }
@@ -829,6 +866,7 @@ public class ServerModelImpl implements ServerModel {
      *
      * @return The number of laptops that were assigned
      */
+    @Override
     public int processQueues() {
         int assigned = 0;
 
@@ -846,6 +884,8 @@ public class ServerModelImpl implements ServerModel {
                 if (reservation != null) {
                     removeFromHighPerformanceQueue(student.getViaId());
                     assigned++;
+                    logger.info("Assigned laptop " + laptop.getId() + " to student " +
+                            student.getViaId() + " from high performance queue");
                 }
             }
 
@@ -862,13 +902,17 @@ public class ServerModelImpl implements ServerModel {
                 if (reservation != null) {
                     removeFromLowPerformanceQueue(student.getViaId());
                     assigned++;
+                    logger.info("Assigned laptop " + laptop.getId() + " to student " +
+                            student.getViaId() + " from low performance queue");
                 }
             }
 
             return assigned;
         } catch (Exception e) {
             handleError("Error processing queues", e);
-            return assigned; // Return how many were successfully assigned before the error
+            return assigned;
         }
     }
+
+
 }

@@ -80,11 +80,6 @@ public class CreateStudentViewModel implements PropertyChangeListener {
         refreshQueues();
     }
 
-    /**
-     * Creates a new student and attempts to assign a laptop.
-     *
-     * @return True if student was created, false otherwise
-     */
     public boolean createStudent() {
         try {
             // Clear error message
@@ -146,7 +141,7 @@ public class CreateStudentViewModel implements PropertyChangeListener {
                 return false;
             }
 
-            // Create student
+            // Create student - the server will handle assignment/queue automatically
             Student student = model.createStudent(
                     nameProperty.get().trim(),
                     degreeEndDate,
@@ -165,37 +160,30 @@ public class CreateStudentViewModel implements PropertyChangeListener {
             // Update result fields
             resultStudentProperty.set(student.getName() + " (VIA ID: " + student.getViaId() + ")");
 
-            // Try to assign laptop
-            Laptop laptop = model.seeNextAvailableLaptop(performanceType);
+            // Wait a bit for reservation to be created
+            Thread.sleep(500);
 
-            if (laptop != null) {
-                // Laptop available, create reservation
-                Reservation reservation = model.createReservation(student, laptop);
+            // Check if student got a laptop or was queued
+            List<Reservation> activeReservations = model.getActiveReservations();
+            boolean hasReservation = activeReservations.stream()
+                    .anyMatch(r -> r.getStudent().getViaId() == student.getViaId());
 
-                if (reservation != null) {
-                    resultStatusProperty.set("Computer tildelt");
+            if (hasReservation) {
+                resultStatusProperty.set("Computer tildelt");
+                // Find the laptop
+                Reservation studentReservation = activeReservations.stream()
+                        .filter(r -> r.getStudent().getViaId() == student.getViaId())
+                        .findFirst()
+                        .orElse(null);
+
+                if (studentReservation != null) {
+                    Laptop laptop = studentReservation.getLaptop();
                     resultLaptopProperty.set(laptop.getBrand() + " " + laptop.getModel());
-                } else {
-                    resultStatusProperty.set("Fejl ved tildeling af computer");
-                    resultLaptopProperty.set("Ingen tildeling");
-
-                    // Add to queue
-                    if (performanceType == PerformanceTypeEnum.HIGH) {
-                        model.addToHighPerformanceQueue(student.getViaId());
-                    } else {
-                        model.addToLowPerformanceQueue(student.getViaId());
-                    }
                 }
             } else {
-                // No laptop available, add to queue
+                // Check if in queue
                 resultStatusProperty.set("Tilføjet til venteliste");
                 resultLaptopProperty.set("Ingen ledige computere");
-
-                if (performanceType == PerformanceTypeEnum.HIGH) {
-                    model.addToHighPerformanceQueue(student.getViaId());
-                } else {
-                    model.addToLowPerformanceQueue(student.getViaId());
-                }
             }
 
             // Refresh data
