@@ -15,7 +15,7 @@ public class RunServer {
             ServerModel serverModel = new ServerModelImpl();
 
             // Default port is 8888
-            int port = 8888;
+            int port = 8880;
 
             // Parse command line arguments for port if provided
             if (args.length > 0) {

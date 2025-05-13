@@ -9,7 +9,7 @@ import client.network.SocketClientImp;
  */
 public class ClientFactory {
     private static String socketHost = "localhost";
-    private static int socketPort = 8888;
+    private static int socketPort = 8880;
     private static SocketClient client;
     private static boolean initialized = false;
 
