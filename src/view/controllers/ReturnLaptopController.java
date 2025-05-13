@@ -2,18 +2,18 @@ package view.controllers;
 
 import core.ViewHandler;
 import core.ViewmModelFactory;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
-import javafx.event.ActionEvent;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TableColumn;
 import viewmodel.ReturnLaptopViewModel;
+import viewmodel.ReturnLaptopViewModel.LoanTableItem;
 
 public class ReturnLaptopController implements ViewController {
 
     private ViewHandler viewHandler;
-    private ReturnLaptopViewModel returnLaptopViewModel;
+    private ReturnLaptopViewModel viewModel;
 
     // Søgepanel
     @FXML private ComboBox<String> searchTypeComboBox;
@@ -23,15 +23,15 @@ public class ReturnLaptopController implements ViewController {
     @FXML private Label searchErrorLabel;
 
     // TableView
-    @FXML private TableView<?> studentLaptopTable;
-    @FXML private TableColumn<?, ?> viaIdColumn;
-    @FXML private TableColumn<?, ?> studentNameColumn;
-    @FXML private TableColumn<?, ?> emailColumn;
-    @FXML private TableColumn<?, ?> phoneColumn;
-    @FXML private TableColumn<?, ?> laptopBrandColumn;
-    @FXML private TableColumn<?, ?> laptopModelColumn;
-    @FXML private TableColumn<?, ?> laptopSpecsColumn;
-    @FXML private TableColumn<?, ?> loanDateColumn;
+    @FXML private TableView<LoanTableItem> studentLaptopTable;
+    @FXML private TableColumn<LoanTableItem, String> viaIdColumn;
+    @FXML private TableColumn<LoanTableItem, String> studentNameColumn;
+    @FXML private TableColumn<LoanTableItem, String> emailColumn;
+    @FXML private TableColumn<LoanTableItem, String> phoneColumn;
+    @FXML private TableColumn<LoanTableItem, String> laptopBrandColumn;
+    @FXML private TableColumn<LoanTableItem, String> laptopModelColumn;
+    @FXML private TableColumn<LoanTableItem, String> laptopSpecsColumn;
+    @FXML private TableColumn<LoanTableItem, String> loanDateColumn;
 
     // Result panel
     @FXML private VBox returnResultPanel;
@@ -48,54 +48,102 @@ public class ReturnLaptopController implements ViewController {
     @FXML private Button exitButton;
 
     @Override
-    public void init(ViewHandler viewHandler, ViewmModelFactory viewmModelFactory) {
+    public void init(ViewHandler viewHandler, ViewmModelFactory viewModelFactory) {
         this.viewHandler = viewHandler;
-        this.returnLaptopViewModel = viewmModelFactory.getReturnLaptopViewModel();
+        this.viewModel = viewModelFactory.getReturnLaptopViewModel();
+
+        setupBindings();
+        setupTable();
+
+        // Setup selection listener for the table
+        studentLaptopTable.getSelectionModel().selectedItemProperty().addListener(
+                (obs, oldVal, newVal) -> viewModel.setSelectedLoan(newVal));
+    }
+
+    private void setupBindings() {
+        // Bind search properties
+        searchTypeComboBox.valueProperty().bindBidirectional(viewModel.searchTypeProperty());
+        searchField.textProperty().bindBidirectional(viewModel.searchTermProperty());
+        searchErrorLabel.textProperty().bind(viewModel.searchErrorProperty());
+
+        // Bind result labels
+        resultStudentLabel.textProperty().bind(viewModel.resultStudentProperty());
+        resultComputerLabel.textProperty().bind(viewModel.resultComputerProperty());
+        resultDateLabel.textProperty().bind(viewModel.resultDateProperty());
+        resultStatusLabel.textProperty().bind(viewModel.resultStatusProperty());
+
+        // Bind status label
+        statusLabel.textProperty().bind(viewModel.statusProperty());
+
+        // Disable return button if no reservation is selected
+        returnButton.disableProperty().bind(
+                studentLaptopTable.getSelectionModel().selectedItemProperty().isNull());
+    }
+
+    private void setupTable() {
+        // Setup table columns
+        viaIdColumn.setCellValueFactory(new PropertyValueFactory<>("viaId"));
+        studentNameColumn.setCellValueFactory(new PropertyValueFactory<>("studentName"));
+        emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
+        phoneColumn.setCellValueFactory(new PropertyValueFactory<>("phone"));
+        laptopBrandColumn.setCellValueFactory(new PropertyValueFactory<>("laptopBrand"));
+        laptopModelColumn.setCellValueFactory(new PropertyValueFactory<>("laptopModel"));
+        laptopSpecsColumn.setCellValueFactory(new PropertyValueFactory<>("laptopSpecs"));
+        loanDateColumn.setCellValueFactory(new PropertyValueFactory<>("loanDate"));
+
+        // Bind table items to view model
+        studentLaptopTable.setItems(viewModel.getActiveLoans());
     }
 
     @Override
     public void close() {
-        // Her kan du rydde op hvis nødvendigt
+        // Unbind properties to avoid memory leaks
+        searchTypeComboBox.valueProperty().unbindBidirectional(viewModel.searchTypeProperty());
+        searchField.textProperty().unbindBidirectional(viewModel.searchTermProperty());
+        searchErrorLabel.textProperty().unbind();
+
+        resultStudentLabel.textProperty().unbind();
+        resultComputerLabel.textProperty().unbind();
+        resultDateLabel.textProperty().unbind();
+        resultStatusLabel.textProperty().unbind();
+
+        statusLabel.textProperty().unbind();
+        returnButton.disableProperty().unbind();
     }
 
-    // Event handler for "Søg"
     @FXML
     private void onSearchStudent(ActionEvent event) {
-        // TODO: Implementér søgefunktion
+        viewModel.searchStudent();
     }
 
-    // Event handler for "Ryd søgning"
     @FXML
     private void onClearSearch(ActionEvent event) {
-        // TODO: Ryd søgefelter og opdater status
+        viewModel.clearSearch();
     }
 
-    // Event handler for "Opdater"
     @FXML
     private void onRefresh(ActionEvent event) {
-        // TODO: Opdater tabel med aktive udlån
-    }
-
-    // Event handler for "Returnér computer"
-    @FXML
-    private void onReturnComputer(ActionEvent event) {
-        // TODO: Marker som returneret og vis i resultPanel
+        viewModel.refreshLoanList();
     }
 
     @FXML
     private void onRefreshList(ActionEvent event) {
-        // TODO: Marker som returneret og vis i resultPanel
+        viewModel.refreshLoanList();
     }
 
+    @FXML
+    private void onReturnComputer(ActionEvent event) {
+        boolean success = viewModel.returnComputer();
+        if (success) {
+            studentLaptopTable.getSelectionModel().clearSelection();
+        }
+    }
 
-
-    // Event handler for "Tilbage"
     @FXML
     private void onBack(ActionEvent event) {
         viewHandler.openLaptopManagementMenu();
     }
 
-    // Event handler for "Afslut"
     @FXML
     private void onExit(ActionEvent event) {
         close();
