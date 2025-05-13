@@ -16,6 +16,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -34,6 +35,9 @@ public class IntegrationTest {
     private SocketClient client;
     private Student testStudent;
     private Laptop testLaptop;
+
+    // Use Random to generate unique IDs for each test run
+    private static final Random random = new Random();
 
     @BeforeClass
     public static void setUpClass() {
@@ -86,17 +90,27 @@ public class IntegrationTest {
     }
 
     /**
+     * Generate a unique VIA ID to avoid database conflicts
+     */
+    private int generateUniqueViaId() {
+        // Generate a random 6-digit ID between 100000 and 999999
+        return 100000 + random.nextInt(900000);
+    }
+
+    /**
      * Opretter testdata der bruges i tests
      */
     private void createTestData() {
         try {
             // Opret teststudent med unikke data
             long timestamp = System.currentTimeMillis();
+            int uniqueViaId = generateUniqueViaId();
+
             testStudent = client.createStudent(
                     "Integration Test Student",
                     new Date(System.currentTimeMillis() + 31536000000L), // 1 år fra nu
                     "Integration Test",
-                    888888, // Testbruger-id
+                    uniqueViaId, // Unique test ID
                     "integrationtest" + timestamp + "@test.com",
                     87654321,
                     PerformanceTypeEnum.LOW
@@ -214,11 +228,12 @@ public class IntegrationTest {
     public void testEndToEndQueueFunctionality() throws InterruptedException {
         // Først opretter vi en student med høj performance behov
         long timestamp = System.currentTimeMillis();
+        int uniqueViaId = generateUniqueViaId();
         Student highPerfStudent = client.createStudent(
                 "Queue Test Student",
                 new Date(System.currentTimeMillis() + 31536000000L), // 1 år fra nu
                 "Queue Test",
-                777777, // Testbruger-id
+                uniqueViaId, // Unique test ID
                 "queuetest" + timestamp + "@test.com",
                 11112222,
                 PerformanceTypeEnum.HIGH

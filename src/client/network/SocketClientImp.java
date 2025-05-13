@@ -164,14 +164,21 @@ public class SocketClientImp implements SocketClient {
         }
     }
 
-    /**
-     * Listener thread that handles incoming messages from the server.
-     */
+
     @Override
     public void run() {
         while (connected) {
             try {
-                Message message = (Message) input.readObject();
+                Object receivedObject = input.readObject();
+
+                // Make sure we got a Message object
+                if (!(receivedObject instanceof Message)) {
+                    System.err.println("Received non-Message object: " +
+                            (receivedObject == null ? "null" : receivedObject.getClass().getName()));
+                    continue;
+                }
+
+                Message message = (Message) receivedObject;
 
                 if (message == null) {
                     continue;
@@ -205,6 +212,11 @@ public class SocketClientImp implements SocketClient {
                 break;
             } catch (ClassNotFoundException e) {
                 System.err.println("Error reading message: " + e.getMessage());
+            } catch (ClassCastException e) {
+                System.err.println("Error casting received object: " + e.getMessage());
+            } catch (Exception e) {
+                System.err.println("Unexpected error in client listener thread: " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
