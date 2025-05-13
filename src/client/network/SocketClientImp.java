@@ -24,7 +24,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  * Implementation of the SocketClient interface.
  * Handles communication with the server.
  */
-public class SocketClientImp implements SocketClient, PropertyChangeSubjectInterface, Runnable {
+public class SocketClientImp implements SocketClient {
     // Socket and streams
     private Socket socket;
     private ObjectInputStream input;
