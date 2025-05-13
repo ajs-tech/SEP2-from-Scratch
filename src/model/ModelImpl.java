@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 // For ModelImpl.java
-public class ModelImpl implements Model, PropertyChangeListener, PropertyChangeSubjectInterface {
+public class ModelImpl implements Model {
     // Event constants for Model's own events - these are exposed to ViewModels
     public static final String EVENT_LAPTOP_CREATED = "model_laptop_created";
     public static final String EVENT_LAPTOP_DELETED = "model_laptop_deleted";

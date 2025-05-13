@@ -5,15 +5,11 @@ import model.helpToLogic.ReservationsDataInterface;
 import model.helpToLogic.StudentDataInterface;
 import objects.Reservation;
 import objects.Student;
-import util.Message;
 import util.PropertyChangeSubjectInterface;
-
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public interface SocketClient extends LaptopDataInterface, StudentDataInterface, ReservationsDataInterface, PropertyChangeSubjectInterface {
+public interface SocketClient extends LaptopDataInterface, StudentDataInterface, ReservationsDataInterface, PropertyChangeSubjectInterface, Runnable {
 
 
     // ===== Additional Methods =====
