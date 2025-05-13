@@ -90,13 +90,6 @@ public class StudentDAO implements GenericDAO<Student, Integer> {
         return null;
     }
 
-    /**
-     * Indsætter en ny student i databasen.
-     *
-     * @param student Student objekt
-     * @return true hvis operationen lykkedes
-     * @throws SQLException hvis der er problemer med databasen
-     */
     @Override
     public boolean insert(Student student) throws SQLException {
         String sql = "INSERT INTO Student (via_id, name, degree_end_date, degree_title, email, phone_number, " +
@@ -128,8 +121,22 @@ public class StudentDAO implements GenericDAO<Student, Integer> {
 
             return success;
         } catch (SQLException e) {
-            handleSQLException("Fejl ved indsættelse af student: " + student.getViaId(), e);
-            throw e;
+            // Check for violation of unique constraints
+            if (e.getMessage().contains("student_email_key")) {
+                // Email already exists
+                String errorMsg = "Email " + student.getEmail() + " er allerede i brug";
+                handleSQLException(errorMsg, e);
+                throw new SQLException(errorMsg);
+            } else if (e.getMessage().contains("student_pkey") || e.getMessage().contains("student_via_id_key")) {
+                // VIA ID already exists
+                String errorMsg = "VIA ID " + student.getViaId() + " er allerede i brug";
+                handleSQLException(errorMsg, e);
+                throw new SQLException(errorMsg);
+            } else {
+                // Other SQL error
+                handleSQLException("Fejl ved indsættelse af student: " + student.getViaId(), e);
+                throw e;
+            }
         }
     }
 

@@ -384,11 +384,13 @@ public class ModelImpl implements Model {
 
     @Override
     public boolean addToHighPerformanceQueue(int studentId) {
+        System.out.println("Client requesting to add student " + studentId + " to high performance queue");
         return client.addToHighPerformanceQueue(studentId);
     }
 
     @Override
     public boolean addToLowPerformanceQueue(int studentId) {
+        System.out.println("Client requesting to add student " + studentId + " to low performance queue");
         return client.addToLowPerformanceQueue(studentId);
     }
 

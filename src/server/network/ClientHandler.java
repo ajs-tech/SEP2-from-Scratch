@@ -334,10 +334,6 @@ public class ClientHandler extends Thread {
 
                 case "process_queues":
                     int processed = serverModel.processQueues();
-                    // Broadcast to all clients if any assignments were made
-                    if (processed > 0) {
-                        connectionPool.broadcastToAll(new Message("queues_processed", processed));
-                    }
                     return processed;
 
                 case "disconnect":

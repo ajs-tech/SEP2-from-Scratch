@@ -201,7 +201,7 @@ public class SocketClientImp implements SocketClient {
                 }
 
                 // For all other messages, fire property change events
-                support.firePropertyChange(type, null, message);
+                support.firePropertyChange(type, null, message.getArgs());
 
             } catch (IOException e) {
                 if (connected) {
@@ -490,21 +490,19 @@ public class SocketClientImp implements SocketClient {
      * @return True if addition succeeded, false otherwise
      */
     public boolean addToHighPerformanceQueue(int studentId) {
+        System.out.println("Sending request to add student " + studentId + " to high performance queue");
         Object response = sendMessage(new Message("add_to_high_queue", studentId));
+        System.out.println("Response from server: " + response);
         if (response instanceof Boolean) {
             return (Boolean) response;
         }
         return false;
     }
 
-    /**
-     * Adds a student to the low performance queue.
-     *
-     * @param studentId The student's VIA ID
-     * @return True if addition succeeded, false otherwise
-     */
     public boolean addToLowPerformanceQueue(int studentId) {
+        System.out.println("Sending request to add student " + studentId + " to low performance queue");
         Object response = sendMessage(new Message("add_to_low_queue", studentId));
+        System.out.println("Response from server: " + response);
         if (response instanceof Boolean) {
             return (Boolean) response;
         }
