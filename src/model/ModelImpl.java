@@ -3,6 +3,7 @@ package model;
 import client.network.SocketClient;
 import core.ClientFactory;
 import enums.PerformanceTypeEnum;
+import enums.ReservationStatusEnum;
 import model.helpToLogic.*;
 import objects.Laptop;
 import objects.Reservation;
@@ -17,7 +18,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-// For ModelImpl.java
 public class ModelImpl implements Model {
     // Event constants for Model's own events - these are exposed to ViewModels
     public static final String EVENT_LAPTOP_CREATED = "model_laptop_created";
@@ -60,6 +60,9 @@ public class ModelImpl implements Model {
         studentData.addListener(this);
         reservationData.addListener(this);
 
+        // Register as listener to client events
+        client.addListener(this);
+
         // Connect data sources
         connectDataSources();
     }
@@ -83,6 +86,15 @@ public class ModelImpl implements Model {
         laptopData.addListener(LaptopData.EVENT_LAPTOP_BECAME_AVAILABLE, reservationData);
     }
 
+    /**
+     * Returns the SocketClient instance used by this model.
+     * @return The client instance
+     */
+    @Override
+    public SocketClient getClient() {
+        return client;
+    }
+
     // Property change listener implementation
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
@@ -100,6 +112,47 @@ public class ModelImpl implements Model {
         // Handle events from ReservationData
         else if (source == reservationData) {
             handleReservationDataEvents(propertyName, evt);
+        }
+        // Handle events from client
+        else if (source == client) {
+            handleClientEvents(propertyName, evt);
+        }
+    }
+
+    /**
+     * Handle events from the client.
+     */
+    private void handleClientEvents(String propertyName, PropertyChangeEvent evt) {
+        // Forward relevant events from client
+        if (propertyName.equals("laptop_created")) {
+            support.firePropertyChange(EVENT_LAPTOP_CREATED, null, evt.getNewValue());
+        }
+        else if (propertyName.equals("laptop_deleted")) {
+            support.firePropertyChange(EVENT_LAPTOP_DELETED, null, evt.getNewValue());
+        }
+        else if (propertyName.equals("laptop_updated")) {
+            support.firePropertyChange(EVENT_LAPTOP_UPDATED, null, evt.getNewValue());
+        }
+        else if (propertyName.equals("laptop_state_changed")) {
+            support.firePropertyChange(EVENT_LAPTOP_STATE_CHANGED, null, evt.getNewValue());
+        }
+        else if (propertyName.equals("student_created")) {
+            support.firePropertyChange(EVENT_STUDENT_CREATED, null, evt.getNewValue());
+        }
+        else if (propertyName.equals("student_deleted")) {
+            support.firePropertyChange(EVENT_STUDENT_DELETED, null, evt.getNewValue());
+        }
+        else if (propertyName.equals("student_updated")) {
+            support.firePropertyChange(EVENT_STUDENT_UPDATED, null, evt.getNewValue());
+        }
+        else if (propertyName.equals("reservation_created")) {
+            support.firePropertyChange(EVENT_RESERVATION_CREATED, null, evt.getNewValue());
+        }
+        else if (propertyName.equals("reservation_completed")) {
+            support.firePropertyChange(EVENT_RESERVATION_COMPLETED, null, evt.getNewValue());
+        }
+        else if (propertyName.equals("reservation_cancelled")) {
+            support.firePropertyChange(EVENT_RESERVATION_CANCELLED, null, evt.getNewValue());
         }
     }
 
@@ -303,6 +356,134 @@ public class ModelImpl implements Model {
     @Override
     public int getCountOfWhoHasLaptop() {
         return client.getCountOfWhoHasLaptop();
+    }
+
+    // ========== Additional Queue Methods ==========
+
+    @Override
+    public List<Student> getHighPerformanceQueue() {
+        return client.getHighPerformanceQueue();
+    }
+
+    @Override
+    public List<Student> getLowPerformanceQueue() {
+        return client.getLowPerformanceQueue();
+    }
+
+    @Override
+    public int getHighPerformanceQueueSize() {
+        List<Student> queue = getHighPerformanceQueue();
+        return queue != null ? queue.size() : 0;
+    }
+
+    @Override
+    public int getLowPerformanceQueueSize() {
+        List<Student> queue = getLowPerformanceQueue();
+        return queue != null ? queue.size() : 0;
+    }
+
+    @Override
+    public boolean addToHighPerformanceQueue(int studentId) {
+        return client.addToHighPerformanceQueue(studentId);
+    }
+
+    @Override
+    public boolean addToLowPerformanceQueue(int studentId) {
+        return client.addToLowPerformanceQueue(studentId);
+    }
+
+    @Override
+    public boolean removeFromHighPerformanceQueue(int studentId) {
+        // Ikke direkte implementeret i socketClient - kræver tilføjelse til server API
+        // Indtil videre vil vi returne false som standard
+        return false;
+    }
+
+    @Override
+    public boolean removeFromLowPerformanceQueue(int studentId) {
+        // Ikke direkte implementeret i socketClient - kræver tilføjelse til server API
+        // Indtil videre vil vi returne false som standard
+        return false;
+    }
+
+    // ========== Additional Reservation Methods ==========
+
+    @Override
+    public List<Reservation> getAllReservations() {
+        return client.getAllReservations();
+    }
+
+    @Override
+    public List<Reservation> getActiveReservations() {
+        return client.getActiveReservations();
+    }
+
+    @Override
+    public List<Reservation> getReservationsByStudent(int studentId) {
+        // Denne metode er ikke direkte tilgængelig via client
+        // Vi laver en simpel implementering der filtrerer alle reservationer
+        List<Reservation> allReservations = getAllReservations();
+        List<Reservation> studentReservations = new ArrayList<>();
+
+        if (allReservations != null) {
+            for (Reservation reservation : allReservations) {
+                if (reservation.getStudent().getViaId() == studentId) {
+                    studentReservations.add(reservation);
+                }
+            }
+        }
+
+        return studentReservations;
+    }
+
+    @Override
+    public List<Reservation> getReservationsByLaptop(UUID laptopId) {
+        // Denne metode er ikke direkte tilgængelig via client
+        // Vi laver en simpel implementering der filtrerer alle reservationer
+        List<Reservation> allReservations = getAllReservations();
+        List<Reservation> laptopReservations = new ArrayList<>();
+
+        if (allReservations != null) {
+            for (Reservation reservation : allReservations) {
+                if (reservation.getLaptop().getId().equals(laptopId)) {
+                    laptopReservations.add(reservation);
+                }
+            }
+        }
+
+        return laptopReservations;
+    }
+
+    @Override
+    public boolean updateReservationStatus(UUID reservationId, ReservationStatusEnum newStatus) {
+        // Denne metode er ikke direkte tilgængelig via client
+        // Vi implementerer den afhængigt af status type
+        if (newStatus == ReservationStatusEnum.COMPLETED) {
+            return completeReservation(reservationId);
+        } else if (newStatus == ReservationStatusEnum.CANCELLED) {
+            return cancelReservation(reservationId);
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean completeReservation(UUID reservationId) {
+        return client.completeReservation(reservationId);
+    }
+
+    @Override
+    public boolean cancelReservation(UUID reservationId) {
+        // Denne metode er ikke direkte implementeret i client
+        // Vil kræve tilføjelse af en metode i SocketClient og på serveren
+        return false;
+    }
+
+    // ========== Process Queues Method ==========
+
+    @Override
+    public int processQueues() {
+        return client.processQueues();
     }
 
     // PropertyChangeNotifier implementation
