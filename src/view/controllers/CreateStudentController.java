@@ -46,10 +46,14 @@ public class CreateStudentController implements ViewController {
 
     // Labels
     @FXML private Label studentErrorLabel;
+    @FXML private Label statusLabel;
+
+    // Result panel labels
     @FXML private Label resultStudentLabel;
+    @FXML private Label resultPerformanceTypeLabel;
     @FXML private Label resultStatusLabel;
     @FXML private Label resultLaptopLabel;
-    @FXML private Label statusLabel;
+    @FXML private Label resultQueueStatusLabel;
 
     // VBox for assignment result panel
     @FXML private VBox assignmentResultPanel;
@@ -61,7 +65,6 @@ public class CreateStudentController implements ViewController {
     @FXML private TableColumn<Laptop, Integer> highLaptopRamColumn;
     @FXML private TableColumn<Laptop, Integer> highLaptopDiskColumn;
     @FXML private TableColumn<Laptop, String> highLaptopStatusColumn;
-    @FXML private TableColumn<Laptop, String> highLaptopStudentColumn;
 
     // TableViews and TableColumns for low-performance laptops
     @FXML private TableView<Laptop> lowPerformanceLaptopsTable;
@@ -70,7 +73,6 @@ public class CreateStudentController implements ViewController {
     @FXML private TableColumn<Laptop, Integer> lowLaptopRamColumn;
     @FXML private TableColumn<Laptop, Integer> lowLaptopDiskColumn;
     @FXML private TableColumn<Laptop, String> lowLaptopStatusColumn;
-    @FXML private TableColumn<Laptop, String> lowLaptopStudentColumn;
 
     // TableViews and TableColumns for high-performance queue
     @FXML private TableView<Student> highPerformanceQueueTable;
@@ -78,7 +80,6 @@ public class CreateStudentController implements ViewController {
     @FXML private TableColumn<Student, String> highQueueNameColumn;
     @FXML private TableColumn<Student, String> highQueueEmailColumn;
     @FXML private TableColumn<Student, Integer> highQueuePhoneColumn;
-    @FXML private TableColumn<Student, String> highQueueDateColumn;
 
     // TableViews and TableColumns for low-performance queue
     @FXML private TableView<Student> lowPerformanceQueueTable;
@@ -86,7 +87,6 @@ public class CreateStudentController implements ViewController {
     @FXML private TableColumn<Student, String> lowQueueNameColumn;
     @FXML private TableColumn<Student, String> lowQueueEmailColumn;
     @FXML private TableColumn<Student, Integer> lowQueuePhoneColumn;
-    @FXML private TableColumn<Student, String> lowQueueDateColumn;
 
     @Override
     public void init(ViewHandler viewHandler, ViewmModelFactory viewModelFactory) {
@@ -95,6 +95,7 @@ public class CreateStudentController implements ViewController {
 
         setupBindings();
         setupTables();
+        setupDatePicker();
     }
 
     private void setupBindings() {
@@ -114,9 +115,43 @@ public class CreateStudentController implements ViewController {
 
         // Bind result labels
         resultStudentLabel.textProperty().bind(viewModel.resultStudentProperty());
+        resultPerformanceTypeLabel.textProperty().bind(viewModel.resultPerformanceTypeProperty());
         resultStatusLabel.textProperty().bind(viewModel.resultStatusProperty());
         resultLaptopLabel.textProperty().bind(viewModel.resultLaptopProperty());
+        resultQueueStatusLabel.textProperty().bind(viewModel.resultQueueStatusProperty());
+
+        // Bind error label
         studentErrorLabel.textProperty().bind(viewModel.errorProperty());
+    }
+
+    private void setupDatePicker() {
+        // Set a custom date formatter for the date picker
+        String pattern = "dd.MM.yyyy";
+
+        degreeEndDatePicker.setConverter(new StringConverter<LocalDate>() {
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(pattern);
+
+            @Override
+            public String toString(LocalDate date) {
+                if (date != null) {
+                    return dateFormatter.format(date);
+                } else {
+                    return "";
+                }
+            }
+
+            @Override
+            public LocalDate fromString(String string) {
+                if (string != null && !string.isEmpty()) {
+                    return LocalDate.parse(string, dateFormatter);
+                } else {
+                    return null;
+                }
+            }
+        });
+
+        // Set a default prompt text
+        degreeEndDatePicker.setPromptText(pattern.toLowerCase());
     }
 
     private void setupTables() {
@@ -127,7 +162,6 @@ public class CreateStudentController implements ViewController {
         highLaptopDiskColumn.setCellValueFactory(new PropertyValueFactory<>("gigabyte"));
         highLaptopStatusColumn.setCellValueFactory(cellData ->
                 new SimpleStringProperty(cellData.getValue().isAvailable() ? "Tilgængelig" : "Udlånt"));
-        highLaptopStudentColumn.setCellValueFactory(cellData -> new SimpleStringProperty(""));
 
         highPerformanceLaptopsTable.setItems(viewModel.getHighPerformanceLaptops());
 
@@ -138,7 +172,6 @@ public class CreateStudentController implements ViewController {
         lowLaptopDiskColumn.setCellValueFactory(new PropertyValueFactory<>("gigabyte"));
         lowLaptopStatusColumn.setCellValueFactory(cellData ->
                 new SimpleStringProperty(cellData.getValue().isAvailable() ? "Tilgængelig" : "Udlånt"));
-        lowLaptopStudentColumn.setCellValueFactory(cellData -> new SimpleStringProperty(""));
 
         lowPerformanceLaptopsTable.setItems(viewModel.getLowPerformanceLaptops());
 
@@ -147,7 +180,6 @@ public class CreateStudentController implements ViewController {
         highQueueNameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         highQueueEmailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
         highQueuePhoneColumn.setCellValueFactory(new PropertyValueFactory<>("phoneNumber"));
-        highQueueDateColumn.setCellValueFactory(cellData -> new SimpleStringProperty(""));
 
         highPerformanceQueueTable.setItems(viewModel.getHighPerformanceQueue());
 
@@ -156,7 +188,6 @@ public class CreateStudentController implements ViewController {
         lowQueueNameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         lowQueueEmailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
         lowQueuePhoneColumn.setCellValueFactory(new PropertyValueFactory<>("phoneNumber"));
-        lowQueueDateColumn.setCellValueFactory(cellData -> new SimpleStringProperty(""));
 
         lowPerformanceQueueTable.setItems(viewModel.getLowPerformanceQueue());
     }
@@ -173,29 +204,50 @@ public class CreateStudentController implements ViewController {
         highPerformanceRadio.selectedProperty().unbindBidirectional(viewModel.highPerformanceProperty());
 
         resultStudentLabel.textProperty().unbind();
+        resultPerformanceTypeLabel.textProperty().unbind();
         resultStatusLabel.textProperty().unbind();
         resultLaptopLabel.textProperty().unbind();
+        resultQueueStatusLabel.textProperty().unbind();
         studentErrorLabel.textProperty().unbind();
     }
 
     @FXML
     private void onCreateStudent(ActionEvent event) {
-        viewModel.createStudent();
+        // Before attempting to create, clear any existing error message
+        studentErrorLabel.setVisible(false);
+
+        boolean success = viewModel.createStudent();
+
+        if (success) {
+            statusLabel.setText("Studerende oprettet");
+            // If successful, make sure error is hidden
+            studentErrorLabel.setVisible(false);
+        } else {
+            // Only make the error visible if there's an actual error
+            if (!viewModel.errorProperty().get().isEmpty()) {
+                studentErrorLabel.setVisible(true);
+            }
+            statusLabel.setText("Fejl ved oprettelse af studerende");
+        }
     }
 
     @FXML
     private void onClearStudentForm(ActionEvent event) {
         viewModel.clearForm();
+        statusLabel.setText("Formular ryddet");
+        studentErrorLabel.setVisible(false);
     }
 
     @FXML
     private void onRefreshLaptops(ActionEvent event) {
         viewModel.refreshLaptops();
+        statusLabel.setText("Laptop-liste opdateret");
     }
 
     @FXML
     private void onRefreshQueues(ActionEvent event) {
         viewModel.refreshQueues();
+        statusLabel.setText("Ventelister opdateret");
     }
 
     @FXML
