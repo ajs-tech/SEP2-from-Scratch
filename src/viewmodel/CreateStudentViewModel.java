@@ -34,8 +34,10 @@ public class CreateStudentViewModel implements PropertyChangeListener {
 
     // Result labels
     private StringProperty resultStudentProperty;
+    private StringProperty resultPerformanceTypeProperty;
     private StringProperty resultStatusProperty;
     private StringProperty resultLaptopProperty;
+    private StringProperty resultQueueStatusProperty;
     private StringProperty errorProperty;
 
     // Tables data
@@ -43,6 +45,10 @@ public class CreateStudentViewModel implements PropertyChangeListener {
     private ObservableList<Laptop> lowPerformanceLaptops;
     private ObservableList<Student> highPerformanceQueue;
     private ObservableList<Student> lowPerformanceQueue;
+
+    // Flag to track if a student was just created successfully
+    private boolean justCreatedStudent = false;
+    private Student lastCreatedStudent = null;
 
     /**
      * Constructs a new CreateStudentViewModel.
@@ -62,8 +68,10 @@ public class CreateStudentViewModel implements PropertyChangeListener {
         highPerformanceProperty = new SimpleBooleanProperty(false);
 
         resultStudentProperty = new SimpleStringProperty("Ingen handling endnu");
+        resultPerformanceTypeProperty = new SimpleStringProperty("");
         resultStatusProperty = new SimpleStringProperty("Ingen handling endnu");
         resultLaptopProperty = new SimpleStringProperty("Ingen tildeling endnu");
+        resultQueueStatusProperty = new SimpleStringProperty("");
         errorProperty = new SimpleStringProperty("");
 
         // Initialize observable lists
@@ -85,28 +93,32 @@ public class CreateStudentViewModel implements PropertyChangeListener {
             // Clear error message
             errorProperty.set("");
 
+            // Reset student creation flags
+            justCreatedStudent = false;
+            lastCreatedStudent = null;
+
             // Validate inputs
-            if (nameProperty.get().trim().isEmpty()) {
+            if (nameProperty.get() == null || nameProperty.get().trim().isEmpty()) {
                 errorProperty.set("Navn skal udfyldes");
                 return false;
             }
 
-            if (emailProperty.get().trim().isEmpty() || !isValidEmail(emailProperty.get())) {
+            if (emailProperty.get() == null || emailProperty.get().trim().isEmpty() || !isValidEmail(emailProperty.get())) {
                 errorProperty.set("En gyldig e-mail skal angives");
                 return false;
             }
 
-            if (viaIdProperty.get().trim().isEmpty() || !isValidViaId(viaIdProperty.get())) {
+            if (viaIdProperty.get() == null || viaIdProperty.get().trim().isEmpty() || !isValidViaId(viaIdProperty.get())) {
                 errorProperty.set("Et gyldigt VIA ID skal angives (4-8 cifre)");
                 return false;
             }
 
-            if (phoneNumberProperty.get().trim().isEmpty() || !isValidPhoneNumber(phoneNumberProperty.get())) {
+            if (phoneNumberProperty.get() == null || phoneNumberProperty.get().trim().isEmpty() || !isValidPhoneNumber(phoneNumberProperty.get())) {
                 errorProperty.set("Et gyldigt telefonnummer skal angives (8-12 cifre)");
                 return false;
             }
 
-            if (degreeTitleProperty.get().trim().isEmpty()) {
+            if (degreeTitleProperty.get() == null || degreeTitleProperty.get().trim().isEmpty()) {
                 errorProperty.set("Uddannelsestitel skal udfyldes");
                 return false;
             }
@@ -157,40 +169,22 @@ public class CreateStudentViewModel implements PropertyChangeListener {
                 return false;
             }
 
-            // Update result fields
-            resultStudentProperty.set(student.getName() + " (VIA ID: " + student.getViaId() + ")");
+            // Set flag that we just created a student
+            justCreatedStudent = true;
+            lastCreatedStudent = student;
 
-            // Wait a bit for reservation to be created
-            Thread.sleep(500);
+            // Update the result panel immediately with what we know
+            updateResultPanel(student);
 
-            // Check if student got a laptop or was queued
-            List<Reservation> activeReservations = model.getActiveReservations();
-            boolean hasReservation = activeReservations.stream()
-                    .anyMatch(r -> r.getStudent().getViaId() == student.getViaId());
-
-            if (hasReservation) {
-                resultStatusProperty.set("Computer tildelt");
-                // Find the laptop
-                Reservation studentReservation = activeReservations.stream()
-                        .filter(r -> r.getStudent().getViaId() == student.getViaId())
-                        .findFirst()
-                        .orElse(null);
-
-                if (studentReservation != null) {
-                    Laptop laptop = studentReservation.getLaptop();
-                    resultLaptopProperty.set(laptop.getBrand() + " " + laptop.getModel());
-                }
-            } else {
-                // Check if in queue
-                resultStatusProperty.set("Tilføjet til venteliste");
-                resultLaptopProperty.set("Ingen ledige computere");
-            }
-
-            // Refresh data
+            // Refresh data to see updated queues and laptops
             refreshLaptops();
             refreshQueues();
 
-            // Clear form
+            // Check for reservation after a short delay (give server time to create it)
+            Thread.sleep(500);
+            checkForReservation(student);
+
+            // Clear form after successful creation
             clearForm();
 
             return true;
@@ -198,6 +192,96 @@ public class CreateStudentViewModel implements PropertyChangeListener {
             errorProperty.set("Fejl: " + e.getMessage());
             e.printStackTrace();
             return false;
+        }
+    }
+
+    /**
+     * Updates the result panel with initial student information
+     */
+    private void updateResultPanel(Student student) {
+        if (student != null) {
+            // Update student information
+            resultStudentProperty.set(student.getName() + " (VIA ID: " + student.getViaId() + ")");
+
+            // Update performance type
+            String performanceText = student.getPerformanceNeeded() == PerformanceTypeEnum.HIGH ?
+                    "Høj (Udvikling, design)" : "Lav (Office, internet)";
+            resultPerformanceTypeProperty.set(performanceText);
+
+            // Set initial status while we wait for reservation check
+            resultStatusProperty.set("Studerende oprettet, tjekker tildeling...");
+            resultLaptopProperty.set("Venter på server...");
+            resultQueueStatusProperty.set("Venter på server...");
+        }
+    }
+
+    /**
+     * Checks if the student has been assigned a laptop or added to a queue
+     */
+    private void checkForReservation(Student student) {
+        if (student == null) return;
+
+        try {
+            // Check if student got a laptop
+            boolean hasReservation = false;
+            List<Reservation> activeReservations = model.getActiveReservations();
+
+            if (activeReservations != null) {
+                for (Reservation reservation : activeReservations) {
+                    if (reservation.getStudent().getViaId() == student.getViaId()) {
+                        hasReservation = true;
+                        Laptop laptop = reservation.getLaptop();
+
+                        // Update result information
+                        resultStatusProperty.set("Computer tildelt");
+                        resultLaptopProperty.set(laptop.getBrand() + " " + laptop.getModel() +
+                                " (ID: " + laptop.getId() + ")");
+                        resultQueueStatusProperty.set("Ikke i venteliste");
+                        break;
+                    }
+                }
+            }
+
+            if (!hasReservation) {
+                // Check if student is in a queue
+                List<Student> highQueue = model.getHighPerformanceQueue();
+                List<Student> lowQueue = model.getLowPerformanceQueue();
+                boolean inHighQueue = false;
+                boolean inLowQueue = false;
+
+                if (highQueue != null) {
+                    for (Student s : highQueue) {
+                        if (s.getViaId() == student.getViaId()) {
+                            inHighQueue = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (lowQueue != null && !inHighQueue) {
+                    for (Student s : lowQueue) {
+                        if (s.getViaId() == student.getViaId()) {
+                            inLowQueue = true;
+                            break;
+                        }
+                    }
+                }
+
+                // Update queue information
+                resultStatusProperty.set("Ingen computer tildelt");
+                resultLaptopProperty.set("Ingen ledig computer");
+
+                if (inHighQueue) {
+                    resultQueueStatusProperty.set("Tilføjet til høj-ydelses venteliste");
+                } else if (inLowQueue) {
+                    resultQueueStatusProperty.set("Tilføjet til lav-ydelses venteliste");
+                } else {
+                    resultQueueStatusProperty.set("Ikke tilføjet til venteliste");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error checking reservation status: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -227,11 +311,13 @@ public class CreateStudentViewModel implements PropertyChangeListener {
         List<Laptop> allLaptops = model.getAllLaptops();
 
         // Sort into high/low performance
-        for (Laptop laptop : allLaptops) {
-            if (laptop.getPerformanceType() == PerformanceTypeEnum.HIGH) {
-                highPerformanceLaptops.add(laptop);
-            } else {
-                lowPerformanceLaptops.add(laptop);
+        if (allLaptops != null) {
+            for (Laptop laptop : allLaptops) {
+                if (laptop.getPerformanceType() == PerformanceTypeEnum.HIGH) {
+                    highPerformanceLaptops.add(laptop);
+                } else {
+                    lowPerformanceLaptops.add(laptop);
+                }
             }
         }
     }
@@ -304,12 +390,20 @@ public class CreateStudentViewModel implements PropertyChangeListener {
         return resultStudentProperty;
     }
 
+    public StringProperty resultPerformanceTypeProperty() {
+        return resultPerformanceTypeProperty;
+    }
+
     public StringProperty resultStatusProperty() {
         return resultStatusProperty;
     }
 
     public StringProperty resultLaptopProperty() {
         return resultLaptopProperty;
+    }
+
+    public StringProperty resultQueueStatusProperty() {
+        return resultQueueStatusProperty;
     }
 
     public StringProperty errorProperty() {
@@ -348,11 +442,18 @@ public class CreateStudentViewModel implements PropertyChangeListener {
                 propertyName.equals(ModelImpl.EVENT_LAPTOP_UPDATED)) {
 
             refreshLaptops();
+
         } else if (propertyName.equals(ModelImpl.EVENT_STUDENT_CREATED) ||
                 propertyName.equals(ModelImpl.EVENT_STUDENT_DELETED) ||
                 propertyName.equals(ModelImpl.EVENT_STUDENT_UPDATED)) {
 
             refreshQueues();
+
+        } else if (propertyName.equals(ModelImpl.EVENT_RESERVATION_CREATED)) {
+            // If a reservation was created for our student, update the result panel
+            if (justCreatedStudent && lastCreatedStudent != null) {
+                checkForReservation(lastCreatedStudent);
+            }
         }
     }
 }

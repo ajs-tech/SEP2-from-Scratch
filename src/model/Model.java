@@ -1,6 +1,7 @@
 package model;
 
 import client.network.SocketClient;
+import enums.PerformanceTypeEnum;
 import enums.ReservationStatusEnum;
 import model.helpToLogic.LaptopDataInterface;
 import model.helpToLogic.ReservationsDataInterface;
@@ -10,6 +11,7 @@ import objects.Student;
 import util.PropertyChangeSubjectInterface;
 
 import java.beans.PropertyChangeListener;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,6 +34,7 @@ public interface Model extends LaptopDataInterface, StudentDataInterface, Reserv
     boolean updateReservationStatus(UUID reservationId, ReservationStatusEnum newStatus);
     boolean completeReservation(UUID reservationId);
     boolean cancelReservation(UUID reservationId);
+    Student createStudent(String name, Date degreeEndDate, String degreeTitle, int viaId, String email, int phoneNumber, PerformanceTypeEnum performanceNeeded);
 
     // ========== Process Queues Method ==========
     int processQueues();
