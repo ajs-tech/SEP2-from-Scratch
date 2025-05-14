@@ -18,6 +18,7 @@ public class AvailableLaptopsController implements ViewController {
     @FXML private Label totalAvailableCountLabel;
     @FXML private Label highPerformanceCountLabel;
     @FXML private Label lowPerformanceCountLabel;
+    @FXML private Button createLaptopButton;
 
     // TableView for høj-ydelses computere
     @FXML private TableView<LaptopTableItem> highPerformanceTable;
@@ -82,6 +83,11 @@ public class AvailableLaptopsController implements ViewController {
         lowStatusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
 
         lowPerformanceTable.setItems(viewModel.getLowPerformanceLaptops());
+    }
+
+    @FXML
+    private void onCreateLaptop(ActionEvent event) {
+        viewHandler.openCreateLaptopView();
     }
 
     @Override
