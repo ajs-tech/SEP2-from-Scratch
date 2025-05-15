@@ -538,6 +538,7 @@ public class ServerModelImpl implements ServerModel {
                 if (reservation != null) {
                     logger.info("Automatically assigned laptop " + availableLaptop.getId() +
                             " to student " + student.getViaId());
+
                 } else {
                     // Failed to create reservation, add to queue
                     addStudentToQueue(student, performanceNeeded);
