@@ -65,6 +65,17 @@ public class ViewHandler {
         }
     }
 
+    public void openCreateLaptopView(){
+        try {
+            Parent root = loadFXML("/view/fxmlFiler/CreateLaptopView.fxml");
+            primaryStage.setScene(new Scene(root));
+            primaryStage.setTitle("VIA Laptop Udlånssystem - Opret Computer");
+            primaryStage.show();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void openLoanOverView(){
         try {
             Parent root = loadFXML("/view/fxmlFiler/LoanOverView.fxml");

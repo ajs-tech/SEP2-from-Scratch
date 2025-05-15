@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+
+<BorderPane prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="view.controllers.CreateLaptopController">
+    <top>
+        <VBox spacing="10.0" BorderPane.alignment="CENTER">
+            <children>
+                <Label styleClass="heading" text="VIA Laptop Udlånssystem - Opret Computer">
+                    <font>
+                        <Font name="System Bold" size="24.0" />
+                    </font>
+                    <VBox.margin>
+                        <Insets bottom="10.0" />
+                    </VBox.margin>
+                </Label>
+                <Separator />
+            </children>
+            <padding>
+                <Insets bottom="10.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+        </VBox>
+    </top>
+    <center>
+        <SplitPane dividerPositions="0.35" orientation="VERTICAL" BorderPane.alignment="CENTER">
+            <items>
+                <!-- Øverste del - Computer oprettelse -->
+                <ScrollPane fitToWidth="true">
+                    <content>
+                        <VBox spacing="15.0">
+                            <padding>
+                                <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                            </padding>
+                            <children>
+                                <Label styleClass="section-header" text="Opret ny computer">
+                                    <font>
+                                        <Font name="System Bold" size="18.0" />
+                                    </font>
+                                </Label>
+                                <Label text="Udfyld nedenstående felter for at oprette en ny computer i systemet. Alle felter er påkrævede." wrapText="true" />
+                                <GridPane hgap="10.0" vgap="10.0">
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" prefWidth="150.0" />
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="200.0" prefWidth="300.0" />
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" prefWidth="150.0" />
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="200.0" prefWidth="300.0" />
+                                    </columnConstraints>
+                                    <rowConstraints>
+                                        <RowConstraints minHeight="30.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                                        <RowConstraints minHeight="30.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                                        <RowConstraints minHeight="30.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                                    </rowConstraints>
+                                    <children>
+                                        <!-- Row 1 -->
+                                        <Label text="Mærke:" />
+                                        <TextField fx:id="brandField" GridPane.columnIndex="1" />
+                                        <Label text="Model:" GridPane.columnIndex="2" />
+                                        <TextField fx:id="modelField" GridPane.columnIndex="3" />
+
+                                        <!-- Row 2 -->
+                                        <Label text="RAM (GB):" GridPane.rowIndex="1" />
+                                        <TextField fx:id="ramField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                        <Label text="Disk (GB):" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                                        <TextField fx:id="diskField" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+
+                                        <!-- Row 3 -->
+                                        <Label text="Performance type:" GridPane.rowIndex="2" />
+                                        <HBox alignment="CENTER_LEFT" spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                            <children>
+                                                <RadioButton fx:id="lowPerformanceRadio" mnemonicParsing="false" selected="true" text="Lav (Office, internet)">
+                                                    <toggleGroup>
+                                                        <ToggleGroup fx:id="performanceGroup" />
+                                                    </toggleGroup>
+                                                </RadioButton>
+                                                <RadioButton fx:id="highPerformanceRadio" mnemonicParsing="false" text="Høj (Udvikling, design)" toggleGroup="$performanceGroup" />
+                                            </children>
+                                        </HBox>
+                                        <HBox alignment="CENTER_RIGHT" spacing="10.0" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.rowIndex="2">
+                                            <children>
+                                                <Button fx:id="createLaptopButton" styleClass="action-button" mnemonicParsing="false" onAction="#onCreateLaptop" text="Opret computer" />
+                                                <Button fx:id="clearLaptopButton" styleClass="secondary-button" mnemonicParsing="false" onAction="#onClearLaptopForm" text="Ryd formular" />
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </GridPane>
+                                <Label fx:id="laptopErrorLabel" styleClass="error-label" textFill="RED" />
+
+                                <!-- Resultat panel -->
+                                <VBox fx:id="resultPanel" spacing="5.0" style="-fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 10;">
+                                    <children>
+                                        <Label styleClass="subsection-header" text="Seneste handling:">
+                                            <font>
+                                                <Font name="System Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+
+                                        <GridPane hgap="10.0" vgap="5.0">
+                                            <columnConstraints>
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="120.0" prefWidth="150.0" />
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="200.0" prefWidth="400.0" />
+                                            </columnConstraints>
+                                            <rowConstraints>
+                                                <RowConstraints minHeight="25.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                <RowConstraints minHeight="25.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                <RowConstraints minHeight="25.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                <RowConstraints minHeight="25.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                            </rowConstraints>
+                                            <children>
+                                                <Label text="Computer:" />
+                                                <Label fx:id="resultLaptopLabel" styleClass="result-info" text="Ingen handling endnu" GridPane.columnIndex="1" />
+
+                                                <Label text="Performance type:" GridPane.rowIndex="1" />
+                                                <Label fx:id="resultPerformanceTypeLabel" styleClass="result-info" text="" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                                                <Label text="Specifikationer:" GridPane.rowIndex="2" />
+                                                <Label fx:id="resultSpecsLabel" styleClass="result-info" text="" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                                                <Label text="Status:" GridPane.rowIndex="3" />
+                                                <Label fx:id="resultStatusLabel" styleClass="result-status" text="" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                            </children>
+                                        </GridPane>
+                                    </children>
+                                </VBox>
+
+                                <!-- Statistik sektion -->
+                                <HBox spacing="20.0" alignment="CENTER">
+                                    <VBox styleClass="stat-box" style="-fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 10; -fx-background-color: #f8f8f8;">
+                                        <Label text="Computere i alt" styleClass="stat-title">
+                                            <font><Font name="System Bold" size="14.0" /></font>
+                                        </Label>
+                                        <Label fx:id="totalLaptopsLabel" text="0" styleClass="stat-value">
+                                            <font><Font size="24.0" /></font>
+                                        </Label>
+                                    </VBox>
+
+                                    <VBox styleClass="stat-box" style="-fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 10; -fx-background-color: #f8f8f8;">
+                                        <Label text="Tilgængelige" styleClass="stat-title">
+                                            <font><Font name="System Bold" size="14.0" /></font>
+                                        </Label>
+                                        <Label fx:id="availableLaptopsLabel" text="0" styleClass="stat-value">
+                                            <font><Font size="24.0" /></font>
+                                        </Label>
+                                    </VBox>
+
+                                    <VBox styleClass="stat-box" style="-fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 10; -fx-background-color: #f8f8f8;">
+                                        <Label text="Udlånte" styleClass="stat-title">
+                                            <font><Font name="System Bold" size="14.0" /></font>
+                                        </Label>
+                                        <Label fx:id="loanedLaptopsLabel" text="0" styleClass="stat-value">
+                                            <font><Font size="24.0" /></font>
+                                        </Label>
+                                    </VBox>
+                                </HBox>
+                            </children>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+
+                <!-- Nederste del - Laptop oversigt med tabs -->
+                <TabPane tabClosingPolicy="UNAVAILABLE">
+                    <tabs>
+                        <Tab text="Alle computere">
+                            <content>
+                                <VBox spacing="10.0">
+                                    <padding>
+                                        <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                                    </padding>
+                                    <children>
+                                        <TableView fx:id="allLaptopsTable" prefHeight="250.0" VBox.vgrow="ALWAYS">
+                                            <columns>
+                                                <TableColumn fx:id="allIdColumn" prefWidth="180.0" text="ID" />
+                                                <TableColumn fx:id="allBrandColumn" prefWidth="100.0" text="Mærke" />
+                                                <TableColumn fx:id="allModelColumn" prefWidth="120.0" text="Model" />
+                                                <TableColumn fx:id="allRamColumn" prefWidth="80.0" text="RAM (GB)" />
+                                                <TableColumn fx:id="allDiskColumn" prefWidth="80.0" text="Disk (GB)" />
+                                                <TableColumn fx:id="allPerformanceColumn" prefWidth="120.0" text="Performance" />
+                                                <TableColumn fx:id="allStatusColumn" prefWidth="100.0" text="Status" />
+                                            </columns>
+                                        </TableView>
+                                    </children>
+                                </VBox>
+                            </content>
+                        </Tab>
+                        <Tab text="Tilgængelige computere">
+                            <content>
+                                <VBox spacing="10.0">
+                                    <padding>
+                                        <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                                    </padding>
+                                    <children>
+                                        <TableView fx:id="availableLaptopsTable" prefHeight="250.0" VBox.vgrow="ALWAYS">
+                                            <columns>
+                                                <TableColumn fx:id="availableIdColumn" prefWidth="180.0" text="ID" />
+                                                <TableColumn fx:id="availableBrandColumn" prefWidth="100.0" text="Mærke" />
+                                                <TableColumn fx:id="availableModelColumn" prefWidth="120.0" text="Model" />
+                                                <TableColumn fx:id="availableRamColumn" prefWidth="80.0" text="RAM (GB)" />
+                                                <TableColumn fx:id="availableDiskColumn" prefWidth="80.0" text="Disk (GB)" />
+                                                <TableColumn fx:id="availablePerformanceColumn" prefWidth="120.0" text="Performance" />
+                                            </columns>
+                                        </TableView>
+                                    </children>
+                                </VBox>
+                            </content>
+                        </Tab>
+                        <Tab text="Udlånte computere">
+                            <content>
+                                <VBox spacing="10.0">
+                                    <padding>
+                                        <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                                    </padding>
+                                    <children>
+                                        <TableView fx:id="loanedLaptopsTable" prefHeight="250.0" VBox.vgrow="ALWAYS">
+                                            <columns>
+                                                <TableColumn fx:id="loanedIdColumn" prefWidth="180.0" text="ID" />
+                                                <TableColumn fx:id="loanedBrandColumn" prefWidth="100.0" text="Mærke" />
+                                                <TableColumn fx:id="loanedModelColumn" prefWidth="120.0" text="Model" />
+                                                <TableColumn fx:id="loanedRamColumn" prefWidth="80.0" text="RAM (GB)" />
+                                                <TableColumn fx:id="loanedDiskColumn" prefWidth="80.0" text="Disk (GB)" />
+                                                <TableColumn fx:id="loanedPerformanceColumn" prefWidth="120.0" text="Performance" />
+                                            </columns>
+                                        </TableView>
+                                    </children>
+                                </VBox>
+                            </content>
+                        </Tab>
+                    </tabs>
+                </TabPane>
+            </items>
+        </SplitPane>
+    </center>
+    <bottom>
+        <HBox alignment="CENTER_RIGHT" spacing="10.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+            </padding>
+            <children>
+                <Button fx:id="refreshButton" styleClass="secondary-button" mnemonicParsing="false" onAction="#onRefresh" text="Opdater lister" />
+                <Separator orientation="VERTICAL" />
+                <Label fx:id="statusLabel" styleClass="status-text" text="Klar til at oprette computer" HBox.hgrow="ALWAYS" />
+                <Button fx:id="backButton" styleClass="secondary-button" mnemonicParsing="false" onAction="#onBack" text="Tilbage til menu" />
+                <Button fx:id="exitButton" styleClass="secondary-button" mnemonicParsing="false" onAction="#onExit" text="Afslut" />
+            </children>
+        </HBox>
+    </bottom>
+</BorderPane>

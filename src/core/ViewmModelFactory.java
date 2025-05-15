@@ -13,6 +13,7 @@ public class ViewmModelFactory {
     private LaptopManagementMenuViewModel laptopManagementMenuViewModel;
     private LoanOverviewViewModel loanOverviewViewModel;
     private ReturnLaptopViewModel returnLaptopViewModel;
+    private CreateLaptopViewModel createLaptopViewModel;
 
     private ViewmModelFactory(){
         model = ModelImpl.getInstance();
@@ -21,6 +22,7 @@ public class ViewmModelFactory {
         laptopManagementMenuViewModel = new LaptopManagementMenuViewModel(model);
         loanOverviewViewModel = new LoanOverviewViewModel(model);
         returnLaptopViewModel = new ReturnLaptopViewModel(model);
+        createLaptopViewModel = new CreateLaptopViewModel(model);
     }
 
     public static ViewmModelFactory getInstance(){
@@ -57,6 +59,10 @@ public class ViewmModelFactory {
 
     public ReturnLaptopViewModel getReturnLaptopViewModel(){
         return returnLaptopViewModel;
+    }
+
+    public CreateLaptopViewModel getCreateLaptopViewModel(){
+        return createLaptopViewModel;
     }
 
 
