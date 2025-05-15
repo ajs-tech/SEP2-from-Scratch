@@ -38,7 +38,7 @@
                     <children>
                         <VBox styleClass="stat-box" style="-fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 10; -fx-background-color: #f8f8f8;">
                             <children>
-                                <Label text="Tilgængelige computere" styleClass="stat-title">
+                                <Label text="Alle computere" styleClass="stat-title">
                                     <font>
                                         <Font name="System Bold" size="14.0" />
                                     </font>
