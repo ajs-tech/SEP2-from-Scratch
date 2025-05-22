@@ -8,7 +8,7 @@
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="view.controllers.LaptopManagementMenuController"
-            prefHeight="500.0" prefWidth="500.0">
+            prefHeight="500.0" prefWidth="1000.0">
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
@@ -17,7 +17,7 @@
         <VBox alignment="CENTER" spacing="10">
             <Label text="VIA Laptop Udlånssystem" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
             <Label fx:id="statusLabel" text="Systemstatus: Online"/>
-            <Label fx:id="availableLabel" text="Tilgængelige computere: 0"/>
+            <Label fx:id="availableLabel" text="Alle computere: 0"/>
             <Label fx:id="loanedLabel" text="Udlånte computere: 0"/>
         </VBox>
     </top>
@@ -52,7 +52,7 @@
                 </font>
             </Button>
 
-            <Button fx:id="availableButton" text="Tilgængelige Computere"
+            <Button fx:id="availableButton" text="Alle Computere"
                     onAction="#handleAvailableLaptops"
                     prefWidth="250" prefHeight="40">
                 <font>

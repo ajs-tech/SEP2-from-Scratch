@@ -5,11 +5,11 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="view.controllers.AvailableLaptopsController">
+<BorderPane prefHeight="500.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="view.controllers.AvailableLaptopsController">
     <top>
         <VBox spacing="10.0" BorderPane.alignment="CENTER">
             <children>
-                <Label styleClass="heading" text="VIA Laptop Udlånssystem - Tilgængelige Computere">
+                <Label styleClass="heading" text="VIA Laptop Udlånssystem - Alle Computere">
                     <font>
                         <Font name="System Bold" size="24.0" />
                     </font>
@@ -38,7 +38,7 @@
                     <children>
                         <VBox styleClass="stat-box" style="-fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 10; -fx-background-color: #f8f8f8;">
                             <children>
-                                <Label text="Tilgængelige computere" styleClass="stat-title">
+                                <Label text="Alle computere" styleClass="stat-title">
                                     <font>
                                         <Font name="System Bold" size="14.0" />
                                     </font>
@@ -84,7 +84,7 @@
                 <!-- Høj-ydelses computere sektion -->
                 <VBox spacing="10.0">
                     <children>
-                        <Label styleClass="section-header" text="Tilgængelige høj-ydelses computere">
+                        <Label styleClass="section-header" text="Alle høj-ydelses computere">
                             <font>
                                 <Font name="System Bold" size="18.0" />
                             </font>
@@ -106,7 +106,7 @@
                 <!-- Lav-ydelses computere sektion -->
                 <VBox spacing="10.0">
                     <children>
-                        <Label styleClass="section-header" text="Tilgængelige lav-ydelses computere">
+                        <Label styleClass="section-header" text="Alle lav-ydelses computere">
                             <font>
                                 <Font name="System Bold" size="18.0" />
                             </font>
